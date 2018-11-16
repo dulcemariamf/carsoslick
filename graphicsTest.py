@@ -1,3 +1,4 @@
+#skippity pop
 from graphics import *
 
 WIDTH, HEIGHT = 1200.0, 700.0

@@ -41,8 +41,14 @@ def main():
     for i in range(6):
         line = Line(Point((i+1)*(WIDTH/7), 0), Point((i+1)*(WIDTH/7), HEIGHT))
         grid.append(line)
-    #draw road lines, first parameter is how many to draw
-    rlines = drawLines(6, win, roadBuff)
+    #draw road lines, first parameter is how many to draw. 3 means 4 rows, and that scales in the same manner
+    rLinesNumber = 3
+    rlines = drawLines(3, win, roadBuff)
+    
+    #create a 2D array that acts as our MDP with rLinesNumber+1 rows 
+    columns = 7
+    MDP = [['e' for x in range(columns)] for y in range (rLinesNumber+1)] 
+    print (MDP)
 
     #calculate lane width
     laneWidth = rlines[0].getCenter().getY() - roadBuff

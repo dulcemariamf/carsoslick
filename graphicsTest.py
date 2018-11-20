@@ -1,4 +1,5 @@
 #import libraries
+import sys
 from pynput import keyboard
 from pynput.keyboard import Key, Listener
 from graphics import *
@@ -15,7 +16,14 @@ done = False            #done flag
 qp = False              #"q pressed" flag for grid toggle
 drawn = False           #drawn flag for grid toggle
 grid = []               #grid array (holds type line from graphics)
+MDP = []                #array for MDP
 listener = None         #keyboard listener, to be created in main()
+playCar = None          #player car object
+carX = 0                #car X-coordinate
+carY = 0                #car Y-coordinate
+xcoords = []            #board x-coordinates
+ycoords = []            #board y-coordinates
+move = False            #player movement flag
 
 def main():
     #grab global variables
@@ -31,6 +39,13 @@ def main():
     global win
     global qp
     global drawn
+    global MDP
+    global playCar
+    global carX
+    global carY
+    global xcoords
+    global ycoords
+    global move
 
     #set background (dirt road)
     win.setBackground('burlywood')
@@ -42,28 +57,45 @@ def main():
         line = Line(Point((i+1)*(WIDTH/7), 0), Point((i+1)*(WIDTH/7), HEIGHT))
         grid.append(line)
     #draw road lines, first parameter is how many to draw. 3 means 4 rows, and that scales in the same manner
-    rLinesNumber = 3
-    rlines = drawLines(3, win, roadBuff)
+    numLanes = 5
+    rLinesNumber = numLanes-1
+    rlines = drawLines(rLinesNumber, win, roadBuff)
     
     #create a 2D array that acts as our MDP with rLinesNumber+1 rows 
     columns = 7
-    MDP = [['e' for x in range(columns)] for y in range (rLinesNumber+1)] 
-    print (MDP)
+    MDP = [['e' for x in range(columns)] for y in range (numLanes)] 
+    #print (MDP)
 
     #calculate lane width
     laneWidth = rlines[0].getCenter().getY() - roadBuff
 
+    #create Arrays to hold coordinates for car locations
+    xcoords = []
+    for i in range(7):
+        x = int(((i*2)+1)*(WIDTH/14))
+        xcoords.append(x-(x%5))
+    xmov = (xcoords[1] - xcoords[0])/10
+    ycoords = []
+    for i in range(numLanes):
+        y = int((roadBuff+(laneWidth/2))+(i*laneWidth))
+        ycoords.append(y-(y%5))
+    ymov = (ycoords[1] - ycoords[0])/10
+    
     #resize player car to fit in lane
     image = img.open("car.png")
-    newHeight = int(laneWidth*0.8)
+    newHeight = int(laneWidth*0.7)
     hpercent = (newHeight / float(image.size[1]))
     wsize = int((float(image.size[0])*float(hpercent)))
     image = image.resize((wsize, newHeight), img.ANTIALIAS)
     image.save('car.png')
     
     #draw car in the center of the screen
-    playCar = Image(Point(WIDTH/2,HEIGHT/2), "car.png")
+    carX = 3
+    carY = int(numLanes/2)
+    MDP[carY][carX] = 'p'
+    playCar = Image(Point(xcoords[carX], ycoords[carY]), "car.png")
     playCar.draw(win)
+    printMDP()
 
     #loop until done
     while not done:
@@ -77,6 +109,23 @@ def main():
                     g.undraw()
             qp = False
             drawn = not drawn
+        if move:
+            x = playCar.getAnchor().getX()
+            y = playCar.getAnchor().getY()
+            if x < xcoords[carX]:
+                xmov = (xcoords[carX]-xcoords[carX-1])/5
+                playCar.move(xmov,0)
+            if x > xcoords[carX]:
+                xmov = (xcoords[carX+1]-xcoords[carX])/5
+                playCar.move(-xmov,0)
+            if y < ycoords[carY]:
+                ymov = (ycoords[carY]-ycoords[carY-1])/5
+                playCar.move(0,ymov)
+            if y > ycoords[carY]:
+                ymov = (ycoords[carY+1]-ycoords[carY])/5
+                playCar.move(0,-ymov)
+            if x == xcoords[carX] and y == ycoords[carY]:
+                move = False
         #move the road lines
         for i in rlines:
             rmove(i, -speed, 0)
@@ -93,20 +142,50 @@ def main():
 
 #stop game method
 def end_game():
-    global listener
-    global win
+    global listener, win
     listener.stop()
     win.close()
+    sys.exit()
+
+def printMDP():
+    global MDP
+    for row in MDP:
+        print(row)
+    print()
+
+def moveCar(drxn):
+    global playCar, carX, carY, MDP, move
+    MDP[carY][carX] = 'e'
+    if drxn == "down" and carY < (len(MDP)-1):
+        carY += 1
+        move = True
+    elif drxn == "up" and carY > 0:
+        carY -= 1
+        move = True
+    elif drxn == "left" and carX > 0:
+        carX -= 1
+        move = True
+    elif drxn == "right" and carX < (len(MDP[0])-1):
+        carX += 1
+        move = True
+    MDP[carY][carX] = 'p'
+    printMDP()
 
 #keyboard listener method
 def on_press(key):
-    global done
-    global drawn
-    global qp
+    global done, drawn, qp, MDP
     if key == Key.esc:  #press esc to quit
         done = True
-    if key.char == 'q': #press q to toggle the grid
+    elif key.char == 'q': #press q to toggle the grid
         qp = True
+    elif key.char == 's':
+        moveCar("down")
+    elif key.char == 'w':
+        moveCar("up")
+    elif key.char == 'a':
+        moveCar("left")
+    elif key.char == 'd':
+        moveCar("right")
 
 #road line movement method
 #Parameters: Rectangle graphics object, int, int

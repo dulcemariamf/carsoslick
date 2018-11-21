@@ -1,5 +1,6 @@
 #import libraries
 import sys
+import random
 from pynput import keyboard
 from pynput.keyboard import Key, Listener
 from graphics import *
@@ -11,11 +12,12 @@ speed = 2.0                         #"car speed" (line speed)
 acceleration = 0.01                 #"car acceleration" (line accel.)
 win = GraphWin('Speedy Wheely Automobiley', WIDTH, HEIGHT)  #graphics window
 points = 0              #points
-p2Win = 100000          #points to win
+p2Win = 5000          #points to win
 done = False            #done flag
 qp = False              #"q pressed" flag for grid toggle
 drawn = False           #drawn flag for grid toggle
 grid = []               #grid array (holds type line from graphics)
+gridcoords = []         #array for grid line x-coordinates
 MDP = []                #array for MDP
 listener = None         #keyboard listener, to be created in main()
 playCar = None          #player car object
@@ -24,6 +26,8 @@ carY = 0                #car Y-coordinate
 xcoords = []            #board x-coordinates
 ycoords = []            #board y-coordinates
 move = False            #player movement flag
+oil = None
+badCar = None
 
 def main():
     #grab global variables
@@ -39,6 +43,7 @@ def main():
     global win
     global qp
     global drawn
+    global grid, gridcoords
     global MDP
     global playCar
     global carX
@@ -46,6 +51,8 @@ def main():
     global xcoords
     global ycoords
     global move
+    global oil
+    global badCar
 
     #set background (dirt road)
     win.setBackground('burlywood')
@@ -54,8 +61,10 @@ def main():
     drawRoad(win, roadBuff)
     #create lines for grid, but don't draw them yet
     for i in range(6):
-        line = Line(Point((i+1)*(WIDTH/7), 0), Point((i+1)*(WIDTH/7), HEIGHT))
+        line = Line(Point(int((i+1)*(WIDTH/7)), 0), Point((i+1)*(WIDTH/7), HEIGHT))
         grid.append(line)
+        gridcoords.append(int((i+1)*(WIDTH/7)))
+    print(gridcoords)
     #draw road lines, first parameter is how many to draw. 3 means 4 rows, and that scales in the same manner
     numLanes = 5
     rLinesNumber = numLanes-1
@@ -89,12 +98,42 @@ def main():
     image = image.resize((wsize, newHeight), img.ANTIALIAS)
     image.save('car.png')
     
-    #draw car in the center of the screen
+    #draw car in the middle lane
     carX = 3
     carY = int(numLanes/2)
     MDP[carY][carX] = 'p'
     playCar = Image(Point(xcoords[carX], ycoords[carY]), "car.png")
     playCar.draw(win)
+
+    #resize oil slick to fit in line
+    image = img.open("oilSlick.png")
+    newHeight = int(laneWidth*0.7)
+    hpercent = (newHeight / float(image.size[1]))
+    wsize = int((float(image.size[0])*float(hpercent)))
+    image = image.resize((wsize, newHeight), img.ANTIALIAS)
+    image.save('oilSlick.png')
+
+    #draw oil in the middle lane
+    oilX = 6
+    oilY = int(numLanes/2)
+    MDP[oilY][oilX] = 'o'
+    oil = Image(Point(xcoords[oilX], ycoords[oilY]), "oilSlick.png")
+    oil.draw(win)
+
+    #resize enemy car to fit in lane
+    image = img.open("badCar.png")
+    newHeight = int(laneWidth*0.7)
+    hpercent = (newHeight / float(image.size[1]))
+    wsize = int((float(image.size[0])*float(hpercent)))
+    image = image.resize((wsize, newHeight), img.ANTIALIAS)
+    image.save('badCar.png')
+
+    #draw enemy car in the middle lane
+    bcarX = 0
+    bcarY = int(numLanes/2)
+    MDP[bcarY][bcarX] = 'b'
+    badCar = Image(Point(xcoords[bcarX], ycoords[bcarY]), "badCar.png")
+    badCar.draw(win)
     printMDP()
 
     #loop until done
@@ -126,11 +165,38 @@ def main():
                 playCar.move(0,-ymov)
             if x == xcoords[carX] and y == ycoords[carY]:
                 move = False
+        #calculate obstacle edges
+        moveObst(speed)
+        if bcarY == carY:
+            badCarR = badCar.getAnchor().getX()+(badCar.getWidth()/2)
+            badCarL = badCar.getAnchor().getX()-(badCar.getWidth()/2)
+            cx = playCar.getAnchor().getX()
+            cxr = cx + (playCar.getWidth()/2)
+            cxl = cx - (playCar.getWidth()/2)
+            collision = (cxr >= badCarL) and (cxl <= badCarR)
+            if collision:
+                print("you lose")
+                end_game()
+        if oilY == carY:
+            oilR = oil.getAnchor().getX()+(oil.getWidth()/2)
+            oilL = oil.getAnchor().getX()-(oil.getWidth()/2)
+            cx = playCar.getAnchor().getX()
+            cxr = cx + (playCar.getWidth()/2)
+            cxl = cx - (playCar.getWidth()/2)
+            collision = (cxr >= oilL) and (cxl <= oilR)
+            if collision:
+                coin = random.randint(1, 2)
+                if coin == 1:
+                    moveCar("down")
+                else:
+                    moveCar("up")
+
         #move the road lines
         for i in rlines:
             rmove(i, -speed, 0)
         #increase speed by acceleration
         speed += acceleration
+
         #increase points, plan to scale with speed later
         points += 1
         #if you get enough points, you win
@@ -142,7 +208,8 @@ def main():
 
 #stop game method
 def end_game():
-    global listener, win
+    global listener, win, points
+    print("points:" + str(points))
     listener.stop()
     win.close()
     sys.exit()
@@ -152,6 +219,12 @@ def printMDP():
     for row in MDP:
         print(row)
     print()
+
+def moveObst(speed):
+    global badCar
+    global oil
+    oil.move(-speed, 0)
+    badCar.move(speed, 0)
 
 def moveCar(drxn):
     global playCar, carX, carY, MDP, move
@@ -169,7 +242,7 @@ def moveCar(drxn):
         carX += 1
         move = True
     MDP[carY][carX] = 'p'
-    printMDP()
+    #printMDP()
 
 #keyboard listener method
 def on_press(key):
@@ -222,7 +295,6 @@ def drawLines(numLines, win, buff):
 
     for k in range(numLines):
         for i in range(numTix+1):
-            #yr = make_rect((i*(buff*2)+(buff), buff+(k+1)*roadWidBuff),(buff, buff/(2*numLines)))
             yr = make_rect((i*(100.0)+(50.0), buff+(k+1)*roadWidBuff),(50.0, 50.0/(2*numLines)))
             yrect = Rectangle(yr[0], yr[1])
             yrect.setOutline("black")

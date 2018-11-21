@@ -12,7 +12,7 @@ speed = 2.0                         #"car speed" (line speed)
 acceleration = 0.01                 #"car acceleration" (line accel.)
 win = GraphWin('Speedy Wheely Automobiley', WIDTH, HEIGHT)  #graphics window
 points = 0              #points
-p2Win = 5000          #points to win
+p2Win = 5000            #points to win
 done = False            #done flag
 qp = False              #"q pressed" flag for grid toggle
 drawn = False           #drawn flag for grid toggle
@@ -26,8 +26,9 @@ carY = 0                #car Y-coordinate
 xcoords = []            #board x-coordinates
 ycoords = []            #board y-coordinates
 move = False            #player movement flag
-oil = None
-badCar = None
+oil, oilX, oilY = None, 0, 0
+badCar, bcarX, bcarY = None, 0, 0
+numLanes = 0
 
 def main():
     #grab global variables
@@ -45,14 +46,13 @@ def main():
     global drawn
     global grid, gridcoords
     global MDP
-    global playCar
-    global carX
-    global carY
+    global playCar, carX, carY
     global xcoords
     global ycoords
     global move
-    global oil
-    global badCar
+    global oil, oilX, oilY
+    global badCar, bcarX, bcarY
+    global numLanes
 
     #set background (dirt road)
     win.setBackground('burlywood')
@@ -221,10 +221,23 @@ def printMDP():
     print()
 
 def moveObst(speed):
-    global badCar
-    global oil
-    oil.move(-speed, 0)
-    badCar.move(speed, 0)
+    global WIDTH, ycoords
+    global badCar, bcarY
+    global oil, oilY
+    oilR = oil.getAnchor().getX()+(oil.getWidth()/2)
+    if oilR <= 0:
+        oilY = random.randint(0,numLanes-1)
+        ydiff = ycoords[oilY]-oil.getAnchor().getY()
+        oil.move(WIDTH+oil.getWidth(), ydiff)
+    else:
+        oil.move(-speed, 0)
+    badCarL = badCar.getAnchor().getX()-(badCar.getWidth()/2)
+    if badCarL >= WIDTH:
+        bcarY = random.randint(0,numLanes-1)
+        ydiff = ycoords[bcarY]-badCar.getAnchor().getY()
+        badCar.move(-WIDTH-badCar.getWidth(), ydiff)
+    else:
+        badCar.move(speed, 0)
 
 def moveCar(drxn):
     global playCar, carX, carY, MDP, move

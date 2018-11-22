@@ -6,13 +6,18 @@ from pynput.keyboard import Key, Listener
 from graphics import *
 from PIL import Image as img
 
+#global controller variables
+numLanes = 5    #reccomended max: 7
+numCars = 1     #max 2, min 1
+numOil = 1      #max 2, min 1
+
 #set global variables
 WIDTH, HEIGHT = 1200.0, 700.0       #window size (leave alone)
 speed = 2.0                         #"car speed" (line speed)
 acceleration = 0.01                 #"car acceleration" (line accel.)
 win = GraphWin('Speedy Wheely Automobiley', WIDTH, HEIGHT)  #graphics window
 points = 0              #points
-p2Win = 5000            #points to win
+p2Win = 3000            #points to win
 done = False            #done flag
 qp = False              #"q pressed" flag for grid toggle
 drawn = False           #drawn flag for grid toggle
@@ -27,8 +32,9 @@ xcoords = []            #board x-coordinates
 ycoords = []            #board y-coordinates
 move = False            #player movement flag
 oil, oilX, oilY = None, 0, 0
-badCar, bcarX, bcarY = None, 0, 0
-numLanes = 0
+oil2, oil2X, oil2Y = None, 0, 0
+badCar, bcarX, bcarY, bcarSp = None, 0, 0, 0
+badCar2, bcar2X, bcar2Y, bcar2Sp = None, 0, 0, 0
 
 def main():
     #grab global variables
@@ -51,8 +57,13 @@ def main():
     global ycoords
     global move
     global oil, oilX, oilY
-    global badCar, bcarX, bcarY
+    global badCar, bcarX, bcarY, bcarSp
     global numLanes
+    global numCars, numOil
+    if numCars > 1:
+        global badCar2, bcar2X, bcar2Y, bcar2Sp
+    if numOil > 1:
+        global oil2, oil2X, oil2Y
 
     #set background (dirt road)
     win.setBackground('burlywood')
@@ -60,15 +71,20 @@ def main():
     #draw grey road
     drawRoad(win, roadBuff)
     #create lines for grid, but don't draw them yet
-    for i in range(6):
-        line = Line(Point(int((i+1)*(WIDTH/7)), 0), Point((i+1)*(WIDTH/7), HEIGHT))
+    for i in range(8):
+        line = Line(Point(int((i)*(WIDTH/7)), 0), Point((i)*(WIDTH/7), HEIGHT))
         grid.append(line)
-        gridcoords.append(int((i+1)*(WIDTH/7)))
+        gridcoords.append(int((i)*(WIDTH/7)))
     print(gridcoords)
     #draw road lines, first parameter is how many to draw. 3 means 4 rows, and that scales in the same manner
-    numLanes = 5
     rLinesNumber = numLanes-1
     rlines = drawLines(rLinesNumber, win, roadBuff)
+
+    #draw point counter
+    pCounter = Text(Point(WIDTH/2, roadBuff/2), "Points: ")
+    pCounter.setSize(24)
+    pCounter.setStyle("bold")
+    pCounter.draw(win)
     
     #create a 2D array that acts as our MDP with rLinesNumber+1 rows 
     columns = 7
@@ -119,6 +135,12 @@ def main():
     MDP[oilY][oilX] = 'o'
     oil = Image(Point(xcoords[oilX], ycoords[oilY]), "oilSlick.png")
     oil.draw(win)
+    if numOil > 1:
+        oil2X = 3
+        oil2Y = 0
+        MDP[oil2Y][oil2X] = 'o'
+        oil2 = Image(Point(xcoords[oil2X], ycoords[oil2Y]), "oilSlick.png")
+        oil2.draw(win)
 
     #resize enemy car to fit in lane
     image = img.open("badCar.png")
@@ -129,11 +151,19 @@ def main():
     image.save('badCar.png')
 
     #draw enemy car in the middle lane
+    bcarSp = 5
     bcarX = 0
-    bcarY = int(numLanes/2)
+    bcarY = int(numLanes/2)+1
     MDP[bcarY][bcarX] = 'b'
     badCar = Image(Point(xcoords[bcarX], ycoords[bcarY]), "badCar.png")
     badCar.draw(win)
+    if numCars > 1:
+        bcar2Sp = bcarSp+2
+        bcar2X = 0
+        bcar2Y = numLanes-1
+        MDP[bcar2Y][bcar2X] = 'b'
+        badCar2 = Image(Point(xcoords[bcar2X], ycoords[bcar2Y]), "badCar.png")
+        badCar2.draw(win)
     printMDP()
 
     #loop until done
@@ -177,9 +207,32 @@ def main():
             if collision:
                 print("you lose")
                 end_game()
+        if numCars > 1 and bcar2Y == carY:
+            badCarR = badCar2.getAnchor().getX()+(badCar2.getWidth()/2)
+            badCarL = badCar2.getAnchor().getX()-(badCar2.getWidth()/2)
+            cx = playCar.getAnchor().getX()
+            cxr = cx + (playCar.getWidth()/2)
+            cxl = cx - (playCar.getWidth()/2)
+            collision = (cxr >= badCarL) and (cxl <= badCarR)
+            if collision:
+                print("you lose")
+                end_game()
         if oilY == carY:
             oilR = oil.getAnchor().getX()+(oil.getWidth()/2)
             oilL = oil.getAnchor().getX()-(oil.getWidth()/2)
+            cx = playCar.getAnchor().getX()
+            cxr = cx + (playCar.getWidth()/2)
+            cxl = cx - (playCar.getWidth()/2)
+            collision = (cxr >= oilL) and (cxl <= oilR)
+            if collision:
+                coin = random.randint(1, 2)
+                if coin == 1:
+                    moveCar("down")
+                else:
+                    moveCar("up")
+        if numOil > 1 and oil2Y == carY:
+            oilR = oil2.getAnchor().getX()+(oil2.getWidth()/2)
+            oilL = oil2.getAnchor().getX()-(oil2.getWidth()/2)
             cx = playCar.getAnchor().getX()
             cxr = cx + (playCar.getWidth()/2)
             cxl = cx - (playCar.getWidth()/2)
@@ -199,6 +252,7 @@ def main():
 
         #increase points, plan to scale with speed later
         points += 1
+        pCounter.setText("Points: " + str(points))
         #if you get enough points, you win
         if points >= p2Win:
             done = True
@@ -221,23 +275,90 @@ def printMDP():
     print()
 
 def moveObst(speed):
-    global WIDTH, ycoords
-    global badCar, bcarY
-    global oil, oilY
+    global WIDTH, xcoords, ycoords
+    global numCars, numOil
+    global badCar, bcarX, bcarY, bcarSp
+    global badCar2, bcar2X, bcar2Y, bcar2Sp
+    global oil, oilX, oilY
+    global oil2, oil2X, oil2Y
+    global gridcoords
+    
     oilR = oil.getAnchor().getX()+(oil.getWidth()/2)
     if oilR <= 0:
+        MDP[oilY][oilX] = 'e'
         oilY = random.randint(0,numLanes-1)
         ydiff = ycoords[oilY]-oil.getAnchor().getY()
         oil.move(WIDTH+oil.getWidth(), ydiff)
+        oilX = 6
+        MDP[oilY][oilX] = 'o'
+        #printMDP()
     else:
         oil.move(-speed, 0)
+        if oilX != 0 and oil.getAnchor().getX() < gridcoords[oilX]:
+            MDP[oilY][oilX] = 'e'
+            oilX -= 1
+            MDP[oilY][oilX] = 'o'
+            #printMDP()
+
+    if numOil > 1:
+        oilR = oil2.getAnchor().getX()+(oil2.getWidth()/2)
+        if oilR <= 0:
+            MDP[oil2Y][oil2X] = 'e'
+            oil2Y = random.randint(0,numLanes-1)
+            ydiff = ycoords[oil2Y]-oil2.getAnchor().getY()
+            oil2.move(WIDTH+oil2.getWidth(), ydiff)
+            oil2X = 6
+            MDP[oil2Y][oil2X] = 'o'
+            #printMDP()
+        else:
+            oil2.move(-speed, 0)
+            if oil2X != 0 and oil2.getAnchor().getX() < gridcoords[oil2X]:
+                MDP[oil2Y][oil2X] = 'e'
+                oil2X -= 1
+                MDP[oil2Y][oil2X] = 'o'
+                #printMDP()
+            
     badCarL = badCar.getAnchor().getX()-(badCar.getWidth()/2)
     if badCarL >= WIDTH:
+        MDP[bcarY][bcarX] = 'e'
         bcarY = random.randint(0,numLanes-1)
         ydiff = ycoords[bcarY]-badCar.getAnchor().getY()
         badCar.move(-WIDTH-badCar.getWidth(), ydiff)
+        bcarX = 0
+        MDP[bcarY][bcarX] = 'b'
+        bcarSp += 1
+        #printMDP()
     else:
-        badCar.move(speed, 0)
+        badCar.move(bcarSp, 0)
+        if bcarX != 6 and badCar.getAnchor().getX() > gridcoords[bcarX]:
+            MDP[bcarY][bcarX] = 'e'
+            bcarX += 1
+            MDP[bcarY][bcarX] = 'b'
+            #printMDP()
+
+    if numCars > 1:
+        badCarL = badCar2.getAnchor().getX()-(badCar2.getWidth()/2)
+        if badCarL >= WIDTH:
+            MDP[bcar2Y][bcar2X] = 'e'
+            bcar2Y = random.randint(0,numLanes-1)
+            if bcar2Y == bcarY and bcarY != 0:
+                if bcarY != 0:
+                    bcar2Y = bcarY-1
+                else:
+                    bcar2Y = bcarY+1
+            ydiff = ycoords[bcar2Y]-badCar2.getAnchor().getY()
+            badCar2.move(-WIDTH-badCar2.getWidth(), ydiff)
+            bcar2X = 0
+            MDP[bcar2Y][bcar2X] = 'b'
+            bcar2Sp += 1
+            printMDP()
+        else:
+            badCar2.move(bcar2Sp, 0)
+            if bcar2X != 6 and badCar2.getAnchor().getX() > gridcoords[bcar2X]:
+                MDP[bcar2Y][bcar2X] = 'e'
+                bcar2X += 1
+                MDP[bcar2Y][bcar2X] = 'b'
+                printMDP()
 
 def moveCar(drxn):
     global playCar, carX, carY, MDP, move

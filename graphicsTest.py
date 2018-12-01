@@ -5,11 +5,25 @@ from pynput import keyboard
 from pynput.keyboard import Key, Listener
 from graphics import *
 from PIL import Image as img
+import MDPReader
 
 #global controller variables
 numLanes = 5    #reccomended max: 7
 numCars = 1     #max 2, min 1
-numOil = 1      #max 2, min 1
+numOil = 2      #max 2, min 1
+
+myChoice = None
+
+while(myChoice == None):
+  print("Choose:")
+  print("1. Value Iteration")
+  print("2. Approximate Q-Learning")
+  print("3. Policy Iteration")
+  print("4. Q-Learning")
+  myChoice = input()
+  myChoice = int(myChoice)
+  if not myChoice in [1,2,3,4]:
+      myChoice = None
 
 #set global variables
 WIDTH, HEIGHT = 1200.0, 700.0       #window size (leave alone)
@@ -24,6 +38,7 @@ drawn = False           #drawn flag for grid toggle
 grid = []               #grid array (holds type line from graphics)
 gridcoords = []         #array for grid line x-coordinates
 MDP = []                #array for MDP
+MDPchanged = False      #flag to tell if the MDP has changed
 listener = None         #keyboard listener, to be created in main()
 playCar = None          #player car object
 carX = 0                #car X-coordinate
@@ -38,6 +53,7 @@ badCar2, bcar2X, bcar2Y, bcar2Sp = None, 0, 0, 0
 
 def main():
     #grab global variables
+    global myChoice
     global listener
     listener = Listener(
             on_press=on_press)
@@ -51,7 +67,7 @@ def main():
     global qp
     global drawn
     global grid, gridcoords
-    global MDP
+    global MDP, MDPchanged
     global playCar, carX, carY
     global xcoords
     global ycoords
@@ -258,6 +274,14 @@ def main():
             done = True
             print("you win!")
         #print(points)
+
+        if MDPchanged:
+            #this is where you will call your algorithm to decide
+            #what move to make, by calling moveCar("up"), moveCar("down"),
+            #moveCar("left"), or moveCar("right")
+            
+            #printMDP()
+            MDPchanged = False
     end_game()
 
 #stop game method
@@ -282,6 +306,7 @@ def moveObst(speed):
     global oil, oilX, oilY
     global oil2, oil2X, oil2Y
     global gridcoords
+    global MDP, MDPchanged
     
     oilR = oil.getAnchor().getX()+(oil.getWidth()/2)
     if oilR <= 0:
@@ -291,6 +316,7 @@ def moveObst(speed):
         oil.move(WIDTH+oil.getWidth(), ydiff)
         oilX = 6
         MDP[oilY][oilX] = 'o'
+        MDPchanged = True
         #printMDP()
     else:
         oil.move(-speed, 0)
@@ -298,6 +324,7 @@ def moveObst(speed):
             MDP[oilY][oilX] = 'e'
             oilX -= 1
             MDP[oilY][oilX] = 'o'
+            MDPchanged = True
             #printMDP()
 
     if numOil > 1:
@@ -309,6 +336,7 @@ def moveObst(speed):
             oil2.move(WIDTH+oil2.getWidth(), ydiff)
             oil2X = 6
             MDP[oil2Y][oil2X] = 'o'
+            MDPChanged = True
             #printMDP()
         else:
             oil2.move(-speed, 0)
@@ -316,6 +344,7 @@ def moveObst(speed):
                 MDP[oil2Y][oil2X] = 'e'
                 oil2X -= 1
                 MDP[oil2Y][oil2X] = 'o'
+                MDPchanged = True
                 #printMDP()
             
     badCarL = badCar.getAnchor().getX()-(badCar.getWidth()/2)
@@ -327,6 +356,7 @@ def moveObst(speed):
         bcarX = 0
         MDP[bcarY][bcarX] = 'b'
         bcarSp += 1
+        MDPchanged = True
         #printMDP()
     else:
         badCar.move(bcarSp, 0)
@@ -334,6 +364,7 @@ def moveObst(speed):
             MDP[bcarY][bcarX] = 'e'
             bcarX += 1
             MDP[bcarY][bcarX] = 'b'
+            MDPchanged = True
             #printMDP()
 
     if numCars > 1:
@@ -351,17 +382,19 @@ def moveObst(speed):
             bcar2X = 0
             MDP[bcar2Y][bcar2X] = 'b'
             bcar2Sp += 1
-            printMDP()
+            MDPchanged = True
+            #printMDP()
         else:
             badCar2.move(bcar2Sp, 0)
             if bcar2X != 6 and badCar2.getAnchor().getX() > gridcoords[bcar2X]:
                 MDP[bcar2Y][bcar2X] = 'e'
                 bcar2X += 1
                 MDP[bcar2Y][bcar2X] = 'b'
-                printMDP()
+                MDPchanged = True
+                #printMDP()
 
 def moveCar(drxn):
-    global playCar, carX, carY, MDP, move
+    global playCar, carX, carY, MDP, MDPchanged, move
     MDP[carY][carX] = 'e'
     if drxn == "down" and carY < (len(MDP)-1):
         carY += 1
@@ -376,6 +409,7 @@ def moveCar(drxn):
         carX += 1
         move = True
     MDP[carY][carX] = 'p'
+    MDPchanged = True
     #printMDP()
 
 #keyboard listener method

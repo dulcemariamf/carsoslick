@@ -6,6 +6,7 @@ from pynput.keyboard import Key, Listener
 from graphics import *
 from PIL import Image as img
 import MDPReader as mdpr
+import ValueIterationAgent as VIA
 
 #global controller variables
 numLanes = 5    #reccomended max: 7
@@ -14,6 +15,7 @@ numOil = 2      #max 2, min 1
 
 myChoice = None
 badCarCoords = []
+numIter = 0
 while(myChoice == None):
   print("Choose:")
   print("1. Value Iteration")
@@ -27,6 +29,9 @@ while(myChoice == None):
 if myChoice == 1:
     numOil = 2
     badCarCoords = [(1,0),(1,1),(1,3),(3,3),(3,4),(5,0),(5,1),(5,2)]
+    while numIter < 1:
+        print("How many iterations?")
+        numIter = int(input())
 #set global variables
 WIDTH, HEIGHT = 1200.0, 700.0       #window size (leave alone)
 speed = 2.0                         #"car speed" (line speed)
@@ -86,6 +91,7 @@ def main():
     mdpReader = mdpr.MDPReader()
     if myChoice == 1:
         startCalc = True
+        global numIter
 
     #set background (dirt road)
     win.setBackground('burlywood')
@@ -232,7 +238,9 @@ def main():
             drawn = not drawn
         if startCalc:
             #do calculations
-            mdpReader.getTransitionStatesAndProbs(MDP, mdpReader.getAgentCoordinates(MDP),"left")
+            vIteration = VIA.ValueIterationAgent(MDP, numIter)
+            vIteration.dothing()
+            #mdpReader.getTransitionStatesAndProbs(MDP, mdpReader.getAgentCoordinates(MDP),"left")
             startCalc = False
         if move:
             x = playCar.getAnchor().getX()

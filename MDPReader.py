@@ -114,6 +114,7 @@ class MDPReader:
         transitionStatesAndProbs.append(resultStateProbPair) 
         
         print (transitionStatesAndProbs)
+        return transitionStatesAndProbs
      
     #in the pacman model, there is an additional state from an exit that confers a reward for moving. 
     #rather than make that, what we can do is detect if we are 

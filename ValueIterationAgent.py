@@ -12,12 +12,18 @@ class ValueIterationAgent:
             newVals = {}
             mdpReader = mdpr.MDPReader()
             for s in mdpReader.getStates(self.mdp):
+                #print(self.mdp[s[1]][s[0]])
+                charAtState = self.mdp[s[1]][s[0]]
                 bestActV = -999999
                 actions = mdpReader.getLegalActions(self.mdp, s)
                 if actions is None:
                     newVals[s] = 0
                 for a in actions:
-                    actSum = self#--CONTINUE HERE
+                    actSum = self.computeQValueFromValues(s, a)
+                    if bestActV < actSum:
+                        bestActV = actSum
+                newVals[s] = bestActV
+            self.values = newVals
 
     def computeQValueFromValues(self, state, action):
         Qval = 0

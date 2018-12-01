@@ -83,6 +83,8 @@ def main():
     if numOil > 1 or myChoice == 1:
         global oil2, oil2X, oil2Y
 
+    mdpReader = mdpr.MDPReader()
+
     #set background (dirt road)
     win.setBackground('burlywood')
 
@@ -251,25 +253,30 @@ def main():
         #calculate obstacle edges
         if myChoice != 1:
             moveObst(speed)
-        if bcarY == carY:
-            badCarR = badCar.getAnchor().getX()+(badCar.getWidth()/2)
-            badCarL = badCar.getAnchor().getX()-(badCar.getWidth()/2)
-            cx = playCar.getAnchor().getX()
-            cxr = cx + (playCar.getWidth()/2)
-            cxl = cx - (playCar.getWidth()/2)
-            collision = (cxr >= badCarL) and (cxl <= badCarR)
-            if collision:
-                print("you lose")
-                end_game()
-        if numCars > 1 and bcar2Y == carY:
-            badCarR = badCar2.getAnchor().getX()+(badCar2.getWidth()/2)
-            badCarL = badCar2.getAnchor().getX()-(badCar2.getWidth()/2)
-            cx = playCar.getAnchor().getX()
-            cxr = cx + (playCar.getWidth()/2)
-            cxl = cx - (playCar.getWidth()/2)
-            collision = (cxr >= badCarL) and (cxl <= badCarR)
-            if collision:
-                print("you lose")
+            if bcarY == carY:
+                badCarR = badCar.getAnchor().getX()+(badCar.getWidth()/2)
+                badCarL = badCar.getAnchor().getX()-(badCar.getWidth()/2)
+                cx = playCar.getAnchor().getX()
+                cxr = cx + (playCar.getWidth()/2)
+                cxl = cx - (playCar.getWidth()/2)
+                collision = (cxr >= badCarL) and (cxl <= badCarR)
+                if collision:
+                    print("you lose")
+                    end_game()
+            if numCars > 1 and bcar2Y == carY:
+                badCarR = badCar2.getAnchor().getX()+(badCar2.getWidth()/2)
+                badCarL = badCar2.getAnchor().getX()-(badCar2.getWidth()/2)
+                cx = playCar.getAnchor().getX()
+                cxr = cx + (playCar.getWidth()/2)
+                cxl = cx - (playCar.getWidth()/2)
+                collision = (cxr >= badCarL) and (cxl <= badCarR)
+                if collision:
+                    print("you lose")
+                    end_game()
+        else:
+            if (carX, carY) in badCarCoords:
+                points -= p2Win
+                print("You lose")
                 end_game()
         if myChoice != 1:
             if oilY == carY:
@@ -466,16 +473,20 @@ def moveObst(speed):
 def moveCar(drxn):
     global playCar, carX, carY, MDP, MDPchanged, move, badCarCoords, myChoice
     MDP[carY][carX] = 'e'
-    if drxn == "down" and carY < (len(MDP)-1) and ((myChoice == 1) <= (not (carX, carY+1) in badCarCoords)):
+    #if drxn == "down" and carY < (len(MDP)-1) and ((myChoice == 1) <= (not (carX, carY+1) in badCarCoords)):
+    if drxn == "down" and carY < (len(MDP)-1):
         carY += 1
         move = True
-    elif drxn == "up" and carY > 0 and ((myChoice == 1) <= (not (carX, carY-1) in badCarCoords)):
+    #elif drxn == "up" and carY > 0 and ((myChoice == 1) <= (not (carX, carY-1) in badCarCoords)):
+    elif drxn == "up" and carY > 0:
         carY -= 1
         move = True
-    elif drxn == "left" and carX > 0 and ((myChoice == 1) <= (not (carX-1, carY) in badCarCoords)):
+    #elif drxn == "left" and carX > 0 and ((myChoice == 1) <= (not (carX-1, carY) in badCarCoords)):
+    elif drxn == "left" and carX > 0:
         carX -= 1
         move = True
-    elif drxn == "right" and carX < (len(MDP[0])-1) and ((myChoice == 1) <= (not (carX+1, carY) in badCarCoords)):
+    #elif drxn == "right" and carX < (len(MDP[0])-1) and ((myChoice == 1) <= (not (carX+1, carY) in badCarCoords)):
+    elif drxn == "right" and carX < (len(MDP[0])-1):
         carX += 1
         move = True
     MDP[carY][carX] = 'p'

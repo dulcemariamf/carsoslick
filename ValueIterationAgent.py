@@ -11,6 +11,7 @@ class ValueIterationAgent:
         for i in range(0, self.iterations):
             newVals = {}
             mdpReader = mdpr.MDPReader()
+            #calculate the state value for each iteration
             for s in mdpReader.getStates(self.mdp):
                 bestActV = -999999
                 actions = mdpReader.getLegalActions(self.mdp, s)
@@ -21,6 +22,13 @@ class ValueIterationAgent:
 
     def computeQValueFromValues(self, state, action):
         Qval = 0
+        #getTransitionStatesAndProbs will give us the next state the the agent will land in
+        for nextState, probability in mdpReader.getTransitionStatesAndProbs(self, mdp, state, action):
+            #get the reward that will result from moving to the next state
+            resultingReward = mdpReader.getReward(state, action, nextState)
+            nextQValues = self.values[nextState]
+            #the qvalue function
+            Qval += probability * (resultingReward + (self.discount * nextQValues))
         return Qval
 
     def dothing(self):

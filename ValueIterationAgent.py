@@ -19,6 +19,10 @@ class ValueIterationAgent:
                 for a in actions:
                     actSum = self#--CONTINUE HERE
 
+    def computeQValueFromValues(self, state, action):
+        Qval = 0
+        return Qval
+
     def dothing(self):
         for i in range(self.iterations):
             print("hello")

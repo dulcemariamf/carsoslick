@@ -84,6 +84,8 @@ def main():
         global oil2, oil2X, oil2Y
 
     mdpReader = mdpr.MDPReader()
+    if myChoice == 1:
+        startCalc = True
 
     #set background (dirt road)
     win.setBackground('burlywood')
@@ -228,6 +230,10 @@ def main():
                     g.undraw()
             qp = False
             drawn = not drawn
+        if startCalc:
+            #do calculations
+            mdpReader.getTransitionStatesAndProbs(MDP, mdpReader.getAgentCoordinates(MDP),"left")
+            startCalc = False
         if move:
             x = playCar.getAnchor().getX()
             y = playCar.getAnchor().getY()
@@ -355,7 +361,10 @@ def main():
             #this is where you will call your algorithm to decide
             #what move to make, by calling moveCar("up"), moveCar("down"),
             #moveCar("left"), or moveCar("right")
-            #print(mdpr.MDPReader.getListOfCarCoordinates(MDP))
+            #print()
+            #print(mdpReader.getAgentCoordinates(MDP))
+            #print()
+            #print(mdpReader.getTransitionStatesAndProbs(MDP,mdpReader.getAgentCoordinates(MDP),"down"))
 
             #printMDP()
             MDPchanged = False

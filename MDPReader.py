@@ -10,7 +10,7 @@ class MDPReader:
         for x in range(len(MDP)):
             for y in range(len(MDP[x])):
                 if MDP[x][y] == 'b' :
-                    carCoordinateArray.append((x,y)) 
+                    carCoordinateArray.append((y,x)) 
         return carCoordinateArray     
             
     #this tells us where the oil spills are within the MDP. Will work for one oil spill, or more.
@@ -20,7 +20,7 @@ class MDPReader:
         for x in range(len(MDP)):
             for y in range(len(MDP[x])):
                 if MDP[x][y] == 'o':
-                    oilCoordinateArray.append((x,y)) 
+                    oilCoordinateArray.append((y,x)) 
         return oilCoordinateArray 
 
     #this tells us where our agent currently is within the MDP.
@@ -30,7 +30,7 @@ class MDPReader:
         for x in range(len(MDP)):
             for y in range(len(MDP[x])):
                 if MDP[x][y] == 'p':
-                    playerCoordinates = (x,y) 
+                    playerCoordinates = (y,x) 
         return playerCoordinates 
     
     #this tells us all of the moves our agents can make from a given state  
@@ -75,7 +75,7 @@ class MDPReader:
         states = [] 
         for x in range(len(MDP)):
             for y in range(len(MDP[x])):
-               states.append((x,y)) 
+               states.append((y,x)) 
         return states 
 
     #gets the transition state from the current action and the probability for that action being successful and returns them together 
@@ -84,16 +84,17 @@ class MDPReader:
     def getTransitionStatesAndProbs(self,mdp,state,action): 
         transitionStatesAndProbs = []
         transitionProbability = 1.0 
-        currentPlayerPosition = self.getAgentCoordinates(MDP) 
+        #currentPlayerPosition = self.getAgentCoordinates(MDP) 
+        currentPlayerPosition = state
         #now take the given action 
         if action == "left" :
-            newPlayerPosition = (currentPlayerPosition[0]-1,currentPlayerPosition[1]) 
+            newPlayerPosition = (currentPlayerPosition[1]-1,currentPlayerPosition[0]) 
         if action == "right":
-            newPlayerPosition = (currentPlayerPosition[0]+1,currentPlayerPosition[1]) 
+            newPlayerPosition = (currentPlayerPosition[1]+1,currentPlayerPosition[0]) 
         if action == "up":
-            newPlayerPosition = (currentPlayerPosition[0],currentPlayerPosition[1]-1) 
+            newPlayerPosition = (currentPlayerPosition[1],currentPlayerPosition[0]-1) 
         if action == "down":
-            newPlayerPosition = (currentPlayerPosition[0],currentPlayerPosition[1]+1)
+            newPlayerPosition = (state[1],state[0]+1)
         
         resultState = newPlayerPosition 
         print ("Here is where we are: " )

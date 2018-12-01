@@ -111,7 +111,8 @@ class MDPReader:
     #in the pacman model, there is an additional state from an exit that confers a reward for moving. 
     #rather than make that, what we can do is detect if we are 
     def getReward(self,MDP,state,action,nextState):
-        return 0
+        if action == "Win":
+            return 10 
      
     #pass in two sets of coordinates, and get the manhattan distance between them.
     def manhattanDistance (self, xy1, xy2):
@@ -132,7 +133,7 @@ a = MDPReader()
 newArray = []
 
 
-newArray = a.getLegalActions(MDP) 
+newArray = a.getLegalActions(MDP,(0,2)) 
 print ("Here is the current state" ) 
 print ((0,2))
 print ("Here are the legal actions from here")

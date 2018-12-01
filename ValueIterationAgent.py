@@ -28,10 +28,11 @@ class ValueIterationAgent:
 
     def computeQValueFromValues(self, state, action):
         Qval = 0
+        mdpReader = mdpr.MDPReader()
         #getTransitionStatesAndProbs will give us the next state the the agent will land in
-        for nextState, probability in mdpReader.getTransitionStatesAndProbs(self, mdp, state, action):
+        for nextState, probability in mdpReader.getTransitionStatesAndProbs(self.mdp, state, action):
             #get the reward that will result from moving to the next state
-            resultingReward = mdpReader.getReward(state, action, nextState)
+            resultingReward = mdpReader.getReward(self.mdp, state, action, nextState)
             nextQValues = self.values[nextState]
             #the qvalue function
             Qval += probability * (resultingReward + (self.discount * nextQValues))

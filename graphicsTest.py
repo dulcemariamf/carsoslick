@@ -165,18 +165,18 @@ def main():
     if myChoice != 1:
         oilX = 6
         oilY = int(numLanes/2)
-    else:
-        oilX = 5
-        oilY = int(numLanes/2)+1
-    MDP[oilY][oilX] = 'o'
-    oil = Image(Point(xcoords[oilX], ycoords[oilY]), "oilSlick.png")
-    oil.draw(win)
-    if numOil > 1 or myChoice == 1:
-        oil2X = 3
-        oil2Y = 1
-        MDP[oil2Y][oil2X] = 'o'
-        oil2 = Image(Point(xcoords[oil2X], ycoords[oil2Y]), "oilSlick.png")
-        oil2.draw(win)
+    #else:
+    #    oilX = 5
+    #    oilY = int(numLanes/2)+1
+        MDP[oilY][oilX] = 'o'
+        oil = Image(Point(xcoords[oilX], ycoords[oilY]), "oilSlick.png")
+        oil.draw(win)
+        if numOil > 1:
+            oil2X = 3
+            oil2Y = 1
+            MDP[oil2Y][oil2X] = 'o'
+            oil2 = Image(Point(xcoords[oil2X], ycoords[oil2Y]), "oilSlick.png")
+            oil2.draw(win)
 
     #resize enemy car to fit in lane
     image = img.open("badCar.png")
@@ -292,7 +292,7 @@ def main():
                         moveCar("down")
                     else:
                         moveCar("up")
-        elif oilX == carX and oilY == carY:
+        """elif oilX == carX and oilY == carY:
             x = playCar.getAnchor().getX()
             y = playCar.getAnchor().getY()
             if x < xcoords[carX]:
@@ -302,7 +302,7 @@ def main():
             if y < ycoords[carY]:
                 moveCar("down")
             if y > ycoords[carY]:
-                moveCar("up")
+                moveCar("up")"""
         if myChoice != 1:
             if numOil > 1 and oil2Y == carY:
                 oilR = oil2.getAnchor().getX()+(oil2.getWidth()/2)
@@ -317,7 +317,7 @@ def main():
                         moveCar("down")
                     else:
                         moveCar("up")
-        elif numOil > 1 and oil2X == carX and oil2Y == carY:
+        """elif numOil > 1 and oil2X == carX and oil2Y == carY:
             x = playCar.getAnchor().getX()
             y = playCar.getAnchor().getY()
             if x < xcoords[carX]:
@@ -327,7 +327,7 @@ def main():
             if y < ycoords[carY]:
                 moveCar("down")
             if y > ycoords[carY]:
-                moveCar("up")
+                moveCar("up")"""
         #move the road lines
         if myChoice != 1:
           for i in rlines:

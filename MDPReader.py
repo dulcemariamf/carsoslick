@@ -48,9 +48,15 @@ class MDPReader:
         #create a list to hold all of the agent's moves
         legalActions = []
         
+        
         #check if we are on the win state because if we are we can only have one actions, called "Win"  
-        if( state == 'w') :
+        if( MDP[state[0]][state[1]] == 'w') :
             legalActions.append("Win")
+            return legalActions 
+        
+        #check if we are on the lose state because we can only have one action from here, called "Lose" 
+        if (MDP[state[0]][state[1]] == 'b') :
+            legalActions.append("Lose")
             return legalActions 
         
         #want to know, can we move up or down, which is y, or left and right, which is denoted by x
@@ -114,7 +120,10 @@ class MDPReader:
     def getReward(self,MDP,state,action,nextState):
         if action == "Win":
             return 10 
-     
+        
+        if action == "Lose":
+            return -10 
+            
     #pass in two sets of coordinates, and get the manhattan distance between them.
     def manhattanDistance (self, xy1, xy2):
         "Returns the Manhattan distance between points xy1 and xy2"

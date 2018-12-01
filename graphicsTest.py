@@ -5,7 +5,7 @@ from pynput import keyboard
 from pynput.keyboard import Key, Listener
 from graphics import *
 from PIL import Image as img
-import MDPReader
+import MDPReader as mdpr
 
 #global controller variables
 numLanes = 5    #reccomended max: 7
@@ -13,7 +13,7 @@ numCars = 1     #max 2, min 1
 numOil = 2      #max 2, min 1
 
 myChoice = None
-
+badCarCoords = []
 while(myChoice == None):
   print("Choose:")
   print("1. Value Iteration")
@@ -24,7 +24,9 @@ while(myChoice == None):
   myChoice = int(myChoice)
   if not myChoice in [1,2,3,4]:
       myChoice = None
-
+if myChoice == 1:
+    numOil = 2
+    badCarCoords = [(1,0),(1,1),(1,3),(3,3),(3,4),(5,0),(5,1),(5,2)]
 #set global variables
 WIDTH, HEIGHT = 1200.0, 700.0       #window size (leave alone)
 speed = 2.0                         #"car speed" (line speed)
@@ -78,7 +80,7 @@ def main():
     global numCars, numOil
     if numCars > 1:
         global badCar2, bcar2X, bcar2Y, bcar2Sp
-    if numOil > 1:
+    if numOil > 1 or myChoice == 1:
         global oil2, oil2X, oil2Y
 
     #set background (dirt road)
@@ -95,12 +97,6 @@ def main():
     #draw road lines, first parameter is how many to draw. 3 means 4 rows, and that scales in the same manner
     rLinesNumber = numLanes-1
     rlines = drawLines(rLinesNumber, win, roadBuff)
-
-    #draw point counter
-    pCounter = Text(Point(WIDTH/2, roadBuff/2), "Points: ")
-    pCounter.setSize(24)
-    pCounter.setStyle("bold")
-    pCounter.draw(win)
     
     #create a 2D array that acts as our MDP with rLinesNumber+1 rows 
     columns = 7
@@ -121,6 +117,20 @@ def main():
         y = int((roadBuff+(laneWidth/2))+(i*laneWidth))
         ycoords.append(y-(y%5))
     ymov = (ycoords[1] - ycoords[0])/10
+
+    #draw point counter or end goal
+    if myChoice != 1:
+        pCounter = Text(Point(WIDTH/2, roadBuff/2), "Points: ")
+        pCounter.setSize(24)
+        pCounter.setStyle("bold")
+        pCounter.draw(win)
+    else:   #draw win space
+        yr = make_rect((xcoords[6],ycoords[numLanes-1]),(xcoords[6]-xcoords[5], laneWidth))
+        yrect = Rectangle(yr[0], yr[1])
+        yrect.setOutline("black")
+        yrect.setFill("green")
+        yrect.draw(win)
+        MDP[numLanes-1][6] = 'w'
     
     #resize player car to fit in lane
     image = img.open("car.png")
@@ -131,8 +141,12 @@ def main():
     image.save('car.png')
     
     #draw car in the middle lane
-    carX = 3
-    carY = int(numLanes/2)
+    if myChoice != 1:
+        carX = 3
+        carY = int(numLanes/2)
+    else:
+        carX = 0
+        carY = 0
     MDP[carY][carX] = 'p'
     playCar = Image(Point(xcoords[carX], ycoords[carY]), "car.png")
     playCar.draw(win)
@@ -146,14 +160,18 @@ def main():
     image.save('oilSlick.png')
 
     #draw oil in the middle lane
-    oilX = 6
-    oilY = int(numLanes/2)
+    if myChoice != 1:
+        oilX = 6
+        oilY = int(numLanes/2)
+    else:
+        oilX = 5
+        oilY = int(numLanes/2)+1
     MDP[oilY][oilX] = 'o'
     oil = Image(Point(xcoords[oilX], ycoords[oilY]), "oilSlick.png")
     oil.draw(win)
-    if numOil > 1:
+    if numOil > 1 or myChoice == 1:
         oil2X = 3
-        oil2Y = 0
+        oil2Y = 1
         MDP[oil2Y][oil2X] = 'o'
         oil2 = Image(Point(xcoords[oil2X], ycoords[oil2Y]), "oilSlick.png")
         oil2.draw(win)
@@ -168,18 +186,32 @@ def main():
 
     #draw enemy car in the middle lane
     bcarSp = 5
-    bcarX = 0
-    bcarY = int(numLanes/2)+1
-    MDP[bcarY][bcarX] = 'b'
-    badCar = Image(Point(xcoords[bcarX], ycoords[bcarY]), "badCar.png")
-    badCar.draw(win)
-    if numCars > 1:
-        bcar2Sp = bcarSp+2
-        bcar2X = 0
-        bcar2Y = numLanes-1
-        MDP[bcar2Y][bcar2X] = 'b'
-        badCar2 = Image(Point(xcoords[bcar2X], ycoords[bcar2Y]), "badCar.png")
-        badCar2.draw(win)
+    if myChoice != 1:
+        bcarX = 0
+    else:
+        bcarX = 3
+    if myChoice != 1:
+        bcarY = int(numLanes/2)+1
+        MDP[bcarY][bcarX] = 'b'
+        badCar = Image(Point(xcoords[bcarX], ycoords[bcarY]), "badCar.png")
+        badCar.draw(win)
+        if numCars > 1:
+            bcar2Sp = bcarSp+2
+            bcar2X = 0
+            bcar2Y = numLanes-1
+            MDP[bcar2Y][bcar2X] = 'b'
+            badCar2 = Image(Point(xcoords[bcar2X], ycoords[bcar2Y]), "badCar.png")
+            badCar2.draw(win)
+    else:
+        xdistance = xcoords[1] - xcoords[0]
+        badCars = []
+        #badCars.append(badCar)
+        for bc in badCarCoords:
+            badCar = Image(Point(xcoords[bc[0]], ycoords[bc[1]]), "badCar.png")
+            badCar.draw(win)
+            badCars.append(badCar)
+            MDP[bc[1]][bc[0]] = 'b'
+
     printMDP()
 
     #loop until done
@@ -197,22 +229,28 @@ def main():
         if move:
             x = playCar.getAnchor().getX()
             y = playCar.getAnchor().getY()
+            div = 5
             if x < xcoords[carX]:
-                xmov = (xcoords[carX]-xcoords[carX-1])/5
+                if myChoice != 1: xmov = (xcoords[carX]-xcoords[carX-1])/div
+                else: xmov = 1
                 playCar.move(xmov,0)
             if x > xcoords[carX]:
-                xmov = (xcoords[carX+1]-xcoords[carX])/5
+                if myChoice != 1: xmov = (xcoords[carX+1]-xcoords[carX])/div
+                else: xmov = 1
                 playCar.move(-xmov,0)
             if y < ycoords[carY]:
-                ymov = (ycoords[carY]-ycoords[carY-1])/5
+                if myChoice != 1: ymov = (ycoords[carY]-ycoords[carY-1])/div
+                else: ymov = 1
                 playCar.move(0,ymov)
             if y > ycoords[carY]:
-                ymov = (ycoords[carY+1]-ycoords[carY])/5
+                if myChoice != 1: ymov = (ycoords[carY+1]-ycoords[carY])/div
+                else: ymov = 1
                 playCar.move(0,-ymov)
             if x == xcoords[carX] and y == ycoords[carY]:
                 move = False
         #calculate obstacle edges
-        moveObst(speed)
+        if myChoice != 1:
+            moveObst(speed)
         if bcarY == carY:
             badCarR = badCar.getAnchor().getX()+(badCar.getWidth()/2)
             badCarL = badCar.getAnchor().getX()-(badCar.getWidth()/2)
@@ -233,53 +271,85 @@ def main():
             if collision:
                 print("you lose")
                 end_game()
-        if oilY == carY:
-            oilR = oil.getAnchor().getX()+(oil.getWidth()/2)
-            oilL = oil.getAnchor().getX()-(oil.getWidth()/2)
-            cx = playCar.getAnchor().getX()
-            cxr = cx + (playCar.getWidth()/2)
-            cxl = cx - (playCar.getWidth()/2)
-            collision = (cxr >= oilL) and (cxl <= oilR)
-            if collision:
-                coin = random.randint(1, 2)
-                if coin == 1:
-                    moveCar("down")
-                else:
-                    moveCar("up")
-        if numOil > 1 and oil2Y == carY:
-            oilR = oil2.getAnchor().getX()+(oil2.getWidth()/2)
-            oilL = oil2.getAnchor().getX()-(oil2.getWidth()/2)
-            cx = playCar.getAnchor().getX()
-            cxr = cx + (playCar.getWidth()/2)
-            cxl = cx - (playCar.getWidth()/2)
-            collision = (cxr >= oilL) and (cxl <= oilR)
-            if collision:
-                coin = random.randint(1, 2)
-                if coin == 1:
-                    moveCar("down")
-                else:
-                    moveCar("up")
-
+        if myChoice != 1:
+            if oilY == carY:
+                oilR = oil.getAnchor().getX()+(oil.getWidth()/2)
+                oilL = oil.getAnchor().getX()-(oil.getWidth()/2)
+                cx = playCar.getAnchor().getX()
+                cxr = cx + (playCar.getWidth()/2)
+                cxl = cx - (playCar.getWidth()/2)
+                collision = (cxr >= oilL) and (cxl <= oilR)
+                if collision:
+                    coin = random.randint(1, 2)
+                    if coin == 1:
+                        moveCar("down")
+                    else:
+                        moveCar("up")
+        elif oilX == carX and oilY == carY:
+            x = playCar.getAnchor().getX()
+            y = playCar.getAnchor().getY()
+            if x < xcoords[carX]:
+                moveCar("right")
+            if x > xcoords[carX]:
+                moveCar("left")
+            if y < ycoords[carY]:
+                moveCar("down")
+            if y > ycoords[carY]:
+                moveCar("up")
+        if myChoice != 1:
+            if numOil > 1 and oil2Y == carY:
+                oilR = oil2.getAnchor().getX()+(oil2.getWidth()/2)
+                oilL = oil2.getAnchor().getX()-(oil2.getWidth()/2)
+                cx = playCar.getAnchor().getX()
+                cxr = cx + (playCar.getWidth()/2)
+                cxl = cx - (playCar.getWidth()/2)
+                collision = (cxr >= oilL) and (cxl <= oilR)
+                if collision:
+                    coin = random.randint(1, 2)
+                    if coin == 1:
+                        moveCar("down")
+                    else:
+                        moveCar("up")
+        elif numOil > 1 and oil2X == carX and oil2Y == carY:
+            x = playCar.getAnchor().getX()
+            y = playCar.getAnchor().getY()
+            if x < xcoords[carX]:
+                moveCar("right")
+            if x > xcoords[carX]:
+                moveCar("left")
+            if y < ycoords[carY]:
+                moveCar("down")
+            if y > ycoords[carY]:
+                moveCar("up")
         #move the road lines
-        for i in rlines:
-            rmove(i, -speed, 0)
+        if myChoice != 1:
+          for i in rlines:
+              rmove(i, -speed, 0)
         #increase speed by acceleration
         speed += acceleration
 
         #increase points, plan to scale with speed later
-        points += 1
-        pCounter.setText("Points: " + str(points))
+        if myChoice != 1:
+            points += 1
+            pCounter.setText("Points: " + str(points))
+        else: #xcoords[6],ycoords[numLanes-1]
+            if carX == 6 and carY == numLanes-1:
+                cx = playCar.getAnchor().getX()
+                cy = playCar.getAnchor().getY()
+                if cx == xcoords[6] and cy == ycoords[numLanes-1]:
+                    points = p2Win
         #if you get enough points, you win
         if points >= p2Win:
             done = True
             print("you win!")
         #print(points)
-
+            
         if MDPchanged:
             #this is where you will call your algorithm to decide
             #what move to make, by calling moveCar("up"), moveCar("down"),
             #moveCar("left"), or moveCar("right")
-            
+            #print(mdpr.MDPReader.getListOfCarCoordinates(MDP))
+
             #printMDP()
             MDPchanged = False
     end_game()
@@ -394,18 +464,18 @@ def moveObst(speed):
                 #printMDP()
 
 def moveCar(drxn):
-    global playCar, carX, carY, MDP, MDPchanged, move
+    global playCar, carX, carY, MDP, MDPchanged, move, badCarCoords, myChoice
     MDP[carY][carX] = 'e'
-    if drxn == "down" and carY < (len(MDP)-1):
+    if drxn == "down" and carY < (len(MDP)-1) and ((myChoice == 1) <= (not (carX, carY+1) in badCarCoords)):
         carY += 1
         move = True
-    elif drxn == "up" and carY > 0:
+    elif drxn == "up" and carY > 0 and ((myChoice == 1) <= (not (carX, carY-1) in badCarCoords)):
         carY -= 1
         move = True
-    elif drxn == "left" and carX > 0:
+    elif drxn == "left" and carX > 0 and ((myChoice == 1) <= (not (carX-1, carY) in badCarCoords)):
         carX -= 1
         move = True
-    elif drxn == "right" and carX < (len(MDP[0])-1):
+    elif drxn == "right" and carX < (len(MDP[0])-1) and ((myChoice == 1) <= (not (carX+1, carY) in badCarCoords)):
         carX += 1
         move = True
     MDP[carY][carX] = 'p'

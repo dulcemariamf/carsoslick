@@ -239,8 +239,8 @@ def main():
         if startCalc:
             #do calculations
             vIteration = VIA.ValueIterationAgent(MDP, numIter)
-            vIteration.dothing()
-            #mdpReader.getTransitionStatesAndProbs(MDP, mdpReader.getAgentCoordinates(MDP),"left")
+            #vIteration.dothing()
+            #print(mdpReader.getLegalActions(MDP, mdpReader.getAgentCoordinates(MDP)))
             startCalc = False
         if move:
             x = playCar.getAnchor().getX()

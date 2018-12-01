@@ -39,8 +39,8 @@ class MDPReader:
         
         #get length of the row and columns
         MDPColumns= len(MDP)
-        print ("Here is the amount of columns per row")
-        print (MDPColumns)
+        #print ("Here is the amount of columns per row")
+        #print (MDPColumns)
         MDPRows = len(MDP[0]) 
         #break up the coordinates 
         column = state[0] 
@@ -50,12 +50,12 @@ class MDPReader:
         
         
         #check if we are on the win state because if we are we can only have one actions, called "Win"  
-        if( MDP[state[0]][state[1]] == 'w') :
+        if( MDP[state[1]][state[0]] == 'w') :
             legalActions.append("Win")
             return legalActions 
         
         #check if we are on the lose state because we can only have one action from here, called "Lose" 
-        if (MDP[state[0]][state[1]] == 'b') :
+        if (MDP[state[1]][state[0]] == 'b') :
             legalActions.append("Lose")
             return legalActions 
         

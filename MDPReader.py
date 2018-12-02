@@ -38,10 +38,10 @@ class MDPReader:
     def getLegalActions (self, MDP, state ): 
         
         #get length of the row and columns
-        MDPColumns= len(MDP)
+        MDPColumns= len(MDP[0])
         #print ("Here is the amount of columns per row")
         #print (MDPColumns)
-        MDPRows = len(MDP[0]) 
+        MDPRows = len(MDP) 
         #break up the coordinates 
         column = state[0] 
         row = state[1] 
@@ -92,28 +92,31 @@ class MDPReader:
         transitionProbability = 1.0 
         #currentPlayerPosition = self.getAgentCoordinates(MDP) 
         currentPlayerPosition = state
+        newPlayerPosition = None
         #now take the given action 
         if action == "left" :
-            newPlayerPosition = (currentPlayerPosition[1]-1,currentPlayerPosition[0]) 
+            newPlayerPosition = (currentPlayerPosition[0]-1,currentPlayerPosition[1]) 
         if action == "right":
-            newPlayerPosition = (currentPlayerPosition[1]+1,currentPlayerPosition[0]) 
+            newPlayerPosition = (currentPlayerPosition[0]+1,currentPlayerPosition[1]) 
         if action == "up":
-            newPlayerPosition = (currentPlayerPosition[1],currentPlayerPosition[0]-1) 
+            newPlayerPosition = (currentPlayerPosition[0],currentPlayerPosition[1]-1) 
         if action == "down":
-            newPlayerPosition = (state[1],state[0]+1)
+            newPlayerPosition = (state[0],state[1]+1)
+        if action == "Win" or action == "Lose":
+            newPlayerPosition = state
         
-        resultState = newPlayerPosition 
-        print ("Here is where we are: " )
-        print (state)
-        print ("Given action: " )
-        print (action) 
-        print ("Here is where we moved: " )
-        print (resultState)
+        resultState = (newPlayerPosition[1],newPlayerPosition[0]) 
+        #print ("Here is where we are: " )
+        #print (state)
+        #print ("Given action: " )
+        #print (action) 
+        #print ("Here is where we moved: " )
+        #print (resultState)
         
         resultStateProbPair = (resultState, transitionProbability) 
         transitionStatesAndProbs.append(resultStateProbPair) 
         
-        print (transitionStatesAndProbs)
+        #print (transitionStatesAndProbs)
         return transitionStatesAndProbs
      
     #in the pacman model, there is an additional state from an exit that confers a reward for moving. 
@@ -124,6 +127,8 @@ class MDPReader:
         
         if action == "Lose":
             return -10 
+            
+        return 0
             
     #pass in two sets of coordinates, and get the manhattan distance between them.
     def manhattanDistance (self, xy1, xy2):

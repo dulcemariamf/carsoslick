@@ -7,10 +7,12 @@ class ValueIterationAgent:
         self.iterations = iterations
 
         self.values = {}
-
+        print("hello")
+        mdpReader = mdpr.MDPReader()
+        for s in mdpReader.getStates(self.mdp):
+            self.values[s] = 0
         for i in range(0, self.iterations):
             newVals = {}
-            mdpReader = mdpr.MDPReader()
             #calculate the state value for each iteration
             for s in mdpReader.getStates(self.mdp):
                 #print(self.mdp[s[1]][s[0]])
@@ -20,11 +22,14 @@ class ValueIterationAgent:
                 if actions is None:
                     newVals[s] = 0
                 for a in actions:
+                    #print(str(s) + " " + str(a))
                     actSum = self.computeQValueFromValues(s, a)
+                    #print(actSum)
                     if bestActV < actSum:
                         bestActV = actSum
                 newVals[s] = bestActV
             self.values = newVals
+        print("hello again")
 
     def computeQValueFromValues(self, state, action):
         Qval = 0
@@ -33,7 +38,7 @@ class ValueIterationAgent:
         for nextState, probability in mdpReader.getTransitionStatesAndProbs(self.mdp, state, action):
             #get the reward that will result from moving to the next state
             resultingReward = mdpReader.getReward(self.mdp, state, action, nextState)
-            nextQValues = self.values[nextState]
+            nextQValues = self.values[(nextState[1], nextState[0])]
             #the qvalue function
             Qval += probability * (resultingReward + (self.discount * nextQValues))
         return Qval

@@ -168,7 +168,40 @@ class MDPReader:
             return -10 
             
         return 0
+    
+    
+    #assummes a valid aciton is passed in 
+    #returns a state 
+    def takeAction(self, MDP, state, action):
+        
+        currentPlayerPosition = state
+        newPlayerPosition = None
+        legalActions = self.getLegalActions(MDP, state)
+        legalAction = False 
+        
+        #now take the given action 
+        if action == "left" and "left" in legalActions : 
+            newPlayerPosition = (currentPlayerPosition[0]-1,currentPlayerPosition[1])
+            legalAction = True
+        if action == "right" and "right" in legalActions:      
+            newPlayerPosition = (currentPlayerPosition[0]+1,currentPlayerPosition[1])
+            legalAction = True
+        if action == "up" and (row-1 >= 0 and MDPRows > 1):
+            newPlayerPosition = (currentPlayerPosition[0],currentPlayerPosition[1]-1)
+            legalAction = True
+        if action == "down" and (row+1 < MDPRows and MDPRows > 1):
+            newPlayerPosition = (state[0],state[1]+1)
+            legalAction = True 
+        
+        #no legal action or we are on a winning/losing state 
+        if action == "Win" or action == "Lose" or legalAction == False:
+            newPlayerPosition = state
             
+        
+        resultState = (newPlayerPosition[1],newPlayerPosition[0]) 
+        
+        return resultState 
+      
     #pass in two sets of coordinates, and get the manhattan distance between them.
     def manhattanDistance (self, xy1, xy2):
         "Returns the Manhattan distance between points xy1 and xy2"
@@ -198,3 +231,5 @@ newArray = a.getTransitionStatesAndProbs(MDP,(0,2),"right")
 print (newArray )
 newArray = a.getPolicyTransitionStatesAndProb(MDP,(0,2),"right") 
 print (newArray )
+action = a.takeAction(MDP, (0,2),"left") 
+print (action)

@@ -5,7 +5,6 @@ class ValueIterationAgent:
         self.mdp = mdp
         self.discount = 0.9
         self.iterations = iterations
-
         self.values = {}
 
         for i in range(0, self.iterations):

@@ -119,7 +119,43 @@ class MDPReader:
         #print (transitionStatesAndProbs)
         return transitionStatesAndProbs
      
-    def followPolicyAction(self, mdp, state, policyAction):
+    def getPolicyTransitionStatesAndProb(self, mdp, state, policyAction):
+        
+        transitionStatesAndProbs = []
+        transitionProbability = 1.0 
+        
+        currentPlayerPosition = state
+        newPlayerPosition = None
+        legalActions = self.getLegalActions(mdp, state)
+
+        legalAction = False 
+        
+        #now take the given action 
+        if policyAction == "left" and "left" in legalActions : 
+            newPlayerPosition = (currentPlayerPosition[0]-1,currentPlayerPosition[1])
+            legalAction = True
+        if policyAction == "right" and "right" in legalActions:      
+            newPlayerPosition = (currentPlayerPosition[0]+1,currentPlayerPosition[1])
+            legalAction = True
+        if policyAction == "up" and (row-1 >= 0 and MDPRows > 1):
+            newPlayerPosition = (currentPlayerPosition[0],currentPlayerPosition[1]-1)
+            legalAction = True
+        if policyAction == "down" and (row+1 < MDPRows and MDPRows > 1):
+            newPlayerPosition = (state[0],state[1]+1)
+            legalAction = True 
+        
+        #no legal action or we are on a winning/losing state 
+        if policyAction == "Win" or policyAction == "Lose" or legalAction == False:
+            newPlayerPosition = state
+            
+        
+        resultState = (newPlayerPosition[1],newPlayerPosition[0]) 
+        
+        resultStateProbPair = (resultState, transitionProbability) 
+        transitionStatesAndProbs.append(resultStateProbPair) 
+        
+        #print (transitionStatesAndProbs)
+        return transitionStatesAndProbs
         
     
     #in the pacman model, there is an additional state from an exit that confers a reward for moving. 
@@ -154,7 +190,11 @@ newArray = []
 
 newArray = a.getLegalActions(MDP,(0,2)) 
 print ("Here is the current state" ) 
-print ((0,2))
-print ("Here are the legal actions from here")
-print (newArray)
-a.getTransitionStatesAndProbs(MDP,(0,2),"up")
+print ((2,0)) #think of it as the opposite of whatever we have in mdp[][] 
+newArray = a.getLegalActions(MDP, (0,2)) 
+print ("Legal Actions from current state") 
+print(newArray) 
+newArray = a.getTransitionStatesAndProbs(MDP,(0,2),"right") 
+print (newArray )
+newArray = a.getPolicyTransitionStatesAndProb(MDP,(0,2),"right") 
+print (newArray )

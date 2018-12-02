@@ -26,7 +26,7 @@ def __init__(self, mdp):
     def computeQValueFromValues(self, state, action):
         Qval = 0
         #getTransitionStatesAndProbs will give us the next state the the agent will land in
-        for nextState, probability in mdpReader.getTransitionStatesAndProbs(self, mdp, state, action):
+        for nextState, probability in mdpReader.getPolicyTransitionStatesAndProb(self, mdp, state, action):
             #get the reward that will result from moving to the next state
             resultingReward = mdpReader.getReward(state, action, nextState)
             nextQValues = self.values[nextState]

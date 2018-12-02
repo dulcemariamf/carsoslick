@@ -8,6 +8,7 @@ def __init__(self, mdp):
     #dictionary that contains all actions for each state
     self.stateAction = {}
     self.stateValue = {}
+    self.policyIterations = 10000
     self.values = {}
 
     mdpReader = mdpr.MDPReader()
@@ -22,6 +23,11 @@ def __init__(self, mdp):
         #computes the q values for each state passed into the action dictionary
         actSum = self.computeQValueFromValues( s, self.stateAction[s])
         self.statevalue[s] = actSum
+
+    #the times that we have to iterate throught the policy 
+    for i in range(policyIterations):
+        #pass in the value and action dictionary
+        #oldPolicy
 
 
     def computeQValueFromValues(self, state, action):

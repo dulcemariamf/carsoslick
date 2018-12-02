@@ -43,6 +43,26 @@ class ValueIterationAgent:
             Qval += probability * (resultingReward + (self.discount * nextQValues))
         return Qval
 
+    def computeActionFromValues(self, state):
+        bestActV = -999999
+        bestAct = None
+        mdpReader = mdpr.MDPReader()
+        actions = mdpReader.getLegalActions(self.mdp, state)
+        if actions is None:
+            return None
+        for a in actions:
+            sPrimeSum = self.getQValue(state, a)
+            if bestActV < sPrimeSum:
+                bestAct = a
+                bestActV = sPrimeSum
+        return bestAct
+
+    def getPolicy(self, state):
+        return self.computeActionFromValues(state)
+
+    def getQValue(self, state, action):
+        return self.computeQValueFromValues(state, action)
+
     def dothing(self):
         for i in range(self.iterations):
             print("hello")

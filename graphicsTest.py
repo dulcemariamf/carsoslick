@@ -225,6 +225,7 @@ def main():
     printMDP()
 
     #loop until done
+    vIteration = VIA.ValueIterationAgent(MDP, numIter)
     while not done:
         #if q was pressed, toggle the grid drawing
         if qp:
@@ -238,7 +239,7 @@ def main():
             drawn = not drawn
         if startCalc:
             #do calculations
-            vIteration = VIA.ValueIterationAgent(MDP, numIter)
+            moveCar(str(vIteration.getPolicy(mdpReader.getAgentCoordinates(MDP))))
             #vIteration.dothing()
             #print(mdpReader.getLegalActions(MDP, mdpReader.getAgentCoordinates(MDP)))
             startCalc = False
@@ -264,6 +265,8 @@ def main():
                 playCar.move(0,-ymov)
             if x == xcoords[carX] and y == ycoords[carY]:
                 move = False
+                if myChoice == 1 and startCalc == False:
+                    startCalc = True
         #calculate obstacle edges
         if myChoice != 1:
             moveObst(speed)

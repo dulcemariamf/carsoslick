@@ -119,6 +119,9 @@ class MDPReader:
         #print (transitionStatesAndProbs)
         return transitionStatesAndProbs
      
+    def followPolicyAction(self, mdp, state, policyAction):
+        
+    
     #in the pacman model, there is an additional state from an exit that confers a reward for moving. 
     #rather than make that, what we can do is detect if we are 
     def getReward(self,MDP,state,action,nextState):

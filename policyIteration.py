@@ -8,20 +8,21 @@ def __init__(self, mdp):
     #dictionary that contains all actions for each state
     self.stateAction = {}
     self.stateValue = {}
-    self.values = {} 
-    
+    self.values = {}
+
     mdpReader = mdpr.MDPReader()
-    #creating our arbitary policy based on the states, always going right
-    #saving in dictionary
+    #creating our arbitary policy based on the states, always going right and giving value 0
+    #saving in both dictionaries
     for s in mdpReader.getStates(self.mdp):
         self.stateValue[s] = 0
-        self.stateAction[s] = "right" 
-    
-    #begin step one of policy iteration 
+        self.stateAction[s] = "right"
+
+    #begin step one of policy iteration
     for s in mdpReader.getStates(self.mdp):
+        #computes the q values for each state passed into the action dictionary
         actSum = self.computeQValueFromValues( s, self.stateAction[s])
-        self.statevalue[s] = actSum 
-        
+        self.statevalue[s] = actSum
+
 
     def computeQValueFromValues(self, state, action):
         Qval = 0

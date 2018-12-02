@@ -42,6 +42,23 @@ class ValueIterationAgent:
             #the qvalue function
             Qval += probability * (resultingReward + (self.discount * nextQValues))
         return Qval
+    def computeActionFromValue(self, state):
+        """ 
+            The policy is the best action according to the values in the given state.
+        
+        """
+        value = 0
+        bestAction = None
+        #check if there are no legal actions 
+        if not mdpreader.getLegalAction(state):
+            return None
+        #iterate through all the actions 
+        for action in mdpreader.getLegalAction(state):
+            currentValue = self.computeQValueFromValues(state, action)
+            if value == 0 or currentValue > value:
+                bestAction = actionvalue = currentValue
+
+        return bestAction
 
     def computeActionFromValues(self, state):
         bestActV = -999999

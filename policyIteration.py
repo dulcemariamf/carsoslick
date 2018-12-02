@@ -25,16 +25,21 @@ def __init__(self, mdp):
             #the qvalue function
             Qval += probability * (resultingReward + (self.discount * nextQValues))
         return Qval
-     def computeActionFromValues(self, state):
-            bestActV = -999999
-            bestAct = None
-            mdpReader = mdpr.MDPReader()
-            actions = mdpReader.getLegalActions(self.mdp, state)
-            if actions is None:
-                return None
-            for a in actions:
-                sPrimeSum = self.getQValue(state, a)
-                if bestActV < sPrimeSum:
-                    bestAct = a
-                    bestActV = sPrimeSum
-            return bestAct
+
+     def computeActionFromValue(self, state):
+        """
+            The policy is the best action according to the values in the given state.
+
+        """
+        value = 0
+        bestAction = None
+        #check if there are no legal actions
+        if not mdpreader.getLegalAction(state):
+            return None
+        #iterate through all the actions
+        for action in mdpreader.getLegalAction(state):
+            currentValue = self.computeQValueFromValues(state, action)
+            if value == 0 or currentValue > value:
+                bestAction = actionvalue = currentValue
+
+        return bestAction

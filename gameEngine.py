@@ -28,7 +28,7 @@ while(myChoice == None):
       myChoice = None
 if myChoice == 1:
     numOil = 2
-    badCarCoords = [(1,0),(1,1),(1,3),(3,3),(3,4),(5,0),(5,1),(5,2)]
+    badCarCoords = [(1,0),(1,1),(1,3),(3,2),(3,3),(3,4),(5,0),(5,1),(5,2)]
     while numIter < 1:
         print("How many iterations?")
         numIter = int(input())

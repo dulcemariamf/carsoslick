@@ -7,7 +7,7 @@ class ValueIterationAgent:
         self.iterations = iterations
 
         self.values = {}
-        print("hello")
+        print(" ")
         mdpReader = mdpr.MDPReader()
         for s in mdpReader.getStates(self.mdp):
             self.values[s] = 0
@@ -29,7 +29,7 @@ class ValueIterationAgent:
                         bestActV = actSum
                 newVals[s] = bestActV
             self.values = newVals
-        print("hello again")
+        print(" ")
 
     def computeQValueFromValues(self, state, action):
         Qval = 0
@@ -43,16 +43,16 @@ class ValueIterationAgent:
             Qval += probability * (resultingReward + (self.discount * nextQValues))
         return Qval
     def computeActionFromValue(self, state):
-        """ 
+        """
             The policy is the best action according to the values in the given state.
-        
+
         """
         value = 0
         bestAction = None
-        #check if there are no legal actions 
+        #check if there are no legal actions
         if not mdpreader.getLegalAction(state):
             return None
-        #iterate through all the actions 
+        #iterate through all the actions
         for action in mdpreader.getLegalAction(state):
             currentValue = self.computeQValueFromValues(state, action)
             if value == 0 or currentValue > value:
@@ -82,4 +82,4 @@ class ValueIterationAgent:
 
     def dothing(self):
         for i in range(self.iterations):
-            print("hello")
+            print(" ")

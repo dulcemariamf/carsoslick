@@ -57,7 +57,6 @@ oil, oilX, oilY = None, 0, 0
 oil2, oil2X, oil2Y = None, 0, 0
 badCar, bcarX, bcarY, bcarSp = None, 0, 0, 0
 badCar2, bcar2X, bcar2Y, bcar2Sp = None, 0, 0, 0
-startCalc = None
 
 def main():
     #grab global variables
@@ -84,7 +83,6 @@ def main():
     global badCar, bcarX, bcarY, bcarSp
     global numLanes
     global numCars, numOil
-    global startCalc
     if numCars > 1:
         global badCar2, bcar2X, bcar2Y, bcar2Sp
     if numOil > 1 or myChoice == 1:

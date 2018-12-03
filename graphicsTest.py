@@ -7,6 +7,7 @@ from graphics import *
 from PIL import Image as img
 import MDPReader as mdpr
 import ValueIterationAgent as VIA
+import policyIteration as PIA
 
 #global controller variables
 numLanes = 5    #reccomended max: 7
@@ -19,17 +20,29 @@ numIter = 0
 while(myChoice == None):
   print("Choose:")
   print("1. Value Iteration")
-  print("2. Approximate Q-Learning")
-  print("3. Policy Iteration")
+  print("2. Policy Iteration")
+  print("3. Approximate Q-Learning")
   print("4. Q-Learning")
   myChoice = input()
   myChoice = int(myChoice)
   if not myChoice in [1,2,3,4]:
       myChoice = None
-if myChoice == 1:
+if myChoice == 1 or myChoice == 2:
     numOil = 2
-    badCarCoords = [(1,0),(1,1),(1,3),(3,3),(3,4),(5,0),(5,1),(5,2)]
-    while numIter < 1:
+    badCarCoords = [(1,0),(1,1),(1,3),(3,3),(3,4),(5,0),(5,1),(5,2)]    #original board
+    boardChoose = 0
+    while myChoice == 2 and not boardChoose in [1,2,3]:
+        print("Which board?")
+        print("1. Original")
+        print("2. Altered")
+        print("3. Empty")
+        boardChoose = input()
+        boardChoose = int(boardChoose)
+        if boardChoose == 2:
+            badCarCoords = [(1,0),(1,1),(5,0),(5,1),(5,2)]              #works for policy iteration
+        elif boardChoose == 3:
+            badCarCoords = []
+    while numIter < 1 and myChoice == 1:
         print("How many iterations?")
         numIter = int(input())
 #set global variables
@@ -87,11 +100,11 @@ def main():
     global startCalc
     if numCars > 1:
         global badCar2, bcar2X, bcar2Y, bcar2Sp
-    if numOil > 1 or myChoice == 1:
+    if numOil > 1 or myChoice == 1 or myChoice == 2:
         global oil2, oil2X, oil2Y
 
     mdpReader = mdpr.MDPReader()
-    if myChoice == 1:
+    if myChoice == 1 or myChoice == 2:
         startCalc = True
         global numIter
 
@@ -131,7 +144,7 @@ def main():
     ymov = (ycoords[1] - ycoords[0])/10
 
     #draw point counter or end goal
-    if myChoice != 1:
+    if myChoice != 1 and myChoice != 2:
         pCounter = Text(Point(WIDTH/2, roadBuff/2), "Points: ")
         pCounter.setSize(24)
         pCounter.setStyle("bold")
@@ -153,7 +166,7 @@ def main():
     image.save('car.png')
     
     #draw car in the middle lane
-    if myChoice != 1:
+    if myChoice != 1 and myChoice != 2:
         carX = 3
         carY = int(numLanes/2)
     else:
@@ -172,7 +185,7 @@ def main():
     image.save('oilSlick.png')
 
     #draw oil in the middle lane
-    if myChoice != 1:
+    if myChoice != 1 and myChoice != 2:
         oilX = 6
         oilY = int(numLanes/2)
     #else:
@@ -198,11 +211,11 @@ def main():
 
     #draw enemy car in the middle lane
     bcarSp = 5
-    if myChoice != 1:
+    if myChoice != 1 and myChoice != 2:
         bcarX = 0
     else:
         bcarX = 3
-    if myChoice != 1:
+    if myChoice != 1 and myChoice != 2:
         bcarY = int(numLanes/2)+1
         MDP[bcarY][bcarX] = 'b'
         badCar = Image(Point(xcoords[bcarX], ycoords[bcarY]), "badCar.png")
@@ -227,7 +240,10 @@ def main():
     printMDP()
 
     #loop until done
-    vIteration = VIA.ValueIterationAgent(MDP, numIter)
+    if myChoice == 1:
+        vIteration = VIA.ValueIterationAgent(MDP, numIter)
+    elif myChoice == 2:
+        pIteration = PIA.policyIterationAgent(MDP)
     while not done:
         #if q was pressed, toggle the grid drawing
         if qp:
@@ -241,7 +257,10 @@ def main():
             drawn = not drawn
         if startCalc:
             #do calculations
-            moveCar(str(vIteration.getPolicy(mdpReader.getAgentCoordinates(MDP))))
+            if myChoice == 1:
+                moveCar(str(vIteration.getPolicy(mdpReader.getAgentCoordinates(MDP))))
+            if myChoice == 2:
+                moveCar(str(pIteration.getPolicy(mdpReader.getAgentCoordinates(MDP))))
             #vIteration.dothing()
             #print(mdpReader.getLegalActions(MDP, mdpReader.getAgentCoordinates(MDP)))
             startCalc = False
@@ -250,27 +269,27 @@ def main():
             y = playCar.getAnchor().getY()
             div = 5
             if x < xcoords[carX]:
-                if myChoice != 1: xmov = (xcoords[carX]-xcoords[carX-1])/div
+                if myChoice != 1 and myChoice != 2: xmov = (xcoords[carX]-xcoords[carX-1])/div
                 else: xmov = 1
                 playCar.move(xmov,0)
             if x > xcoords[carX]:
-                if myChoice != 1: xmov = (xcoords[carX+1]-xcoords[carX])/div
+                if myChoice != 1 and myChoice != 2: xmov = (xcoords[carX+1]-xcoords[carX])/div
                 else: xmov = 1
                 playCar.move(-xmov,0)
             if y < ycoords[carY]:
-                if myChoice != 1: ymov = (ycoords[carY]-ycoords[carY-1])/div
+                if myChoice != 1 and myChoice != 2: ymov = (ycoords[carY]-ycoords[carY-1])/div
                 else: ymov = 1
                 playCar.move(0,ymov)
             if y > ycoords[carY]:
-                if myChoice != 1: ymov = (ycoords[carY+1]-ycoords[carY])/div
+                if myChoice != 1 and myChoice != 2: ymov = (ycoords[carY+1]-ycoords[carY])/div
                 else: ymov = 1
                 playCar.move(0,-ymov)
             if x == xcoords[carX] and y == ycoords[carY]:
                 move = False
-                if myChoice == 1 and startCalc == False:
+                if (myChoice == 1 or myChoice == 2) and startCalc == False:
                     startCalc = True
         #calculate obstacle edges
-        if myChoice != 1:
+        if myChoice != 1 and myChoice != 2:
             moveObst(speed)
             if bcarY == carY:
                 badCarR = badCar.getAnchor().getX()+(badCar.getWidth()/2)
@@ -297,7 +316,7 @@ def main():
                 points -= p2Win
                 print("You lose")
                 end_game()
-        if myChoice != 1:
+        if myChoice != 1 and myChoice != 2:
             if oilY == carY:
                 oilR = oil.getAnchor().getX()+(oil.getWidth()/2)
                 oilL = oil.getAnchor().getX()-(oil.getWidth()/2)
@@ -322,7 +341,7 @@ def main():
                 moveCar("down")
             if y > ycoords[carY]:
                 moveCar("up")"""
-        if myChoice != 1:
+        if myChoice != 1 and myChoice != 2:
             if numOil > 1 and oil2Y == carY:
                 oilR = oil2.getAnchor().getX()+(oil2.getWidth()/2)
                 oilL = oil2.getAnchor().getX()-(oil2.getWidth()/2)
@@ -348,14 +367,14 @@ def main():
             if y > ycoords[carY]:
                 moveCar("up")"""
         #move the road lines
-        if myChoice != 1:
+        if myChoice != 1 and myChoice != 2:
           for i in rlines:
               rmove(i, -speed, 0)
         #increase speed by acceleration
         speed += acceleration
 
         #increase points, plan to scale with speed later
-        if myChoice != 1:
+        if myChoice != 1 and myChoice != 2:
             points += 1
             pCounter.setText("Points: " + str(points))
         else: #xcoords[6],ycoords[numLanes-1]

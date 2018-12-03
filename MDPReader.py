@@ -32,6 +32,14 @@ class MDPReader:
                 if MDP[x][y] == 'p':
                     playerCoordinates = (y,x) 
         return playerCoordinates 
+        
+    def getWins(self, MDP):
+        winCoordinates = []
+        for x in range(len(MDP)):
+            for y in range(len(MDP[x])):
+                if MDP[x][y] == 'w':
+                    winCoordinates.append((y,x))
+        return winCoordinates 
     
     #this tells us all of the moves our agents can make from a given state  
     #The returned list is list of tuples, where each tuple is an (x,y) coordinate. 
@@ -137,10 +145,10 @@ class MDPReader:
         if policyAction == "right" and "right" in legalActions:      
             newPlayerPosition = (currentPlayerPosition[0]+1,currentPlayerPosition[1])
             legalAction = True
-        if policyAction == "up" and (row-1 >= 0 and MDPRows > 1):
+        if policyAction == "up" and "up" in legalActions:
             newPlayerPosition = (currentPlayerPosition[0],currentPlayerPosition[1]-1)
             legalAction = True
-        if policyAction == "down" and (row+1 < MDPRows and MDPRows > 1):
+        if policyAction == "down" and "down" in legalActions:
             newPlayerPosition = (state[0],state[1]+1)
             legalAction = True 
         
@@ -148,6 +156,8 @@ class MDPReader:
         if policyAction == "Win" or policyAction == "Lose" or legalAction == False:
             newPlayerPosition = state
             
+        #if mdp[newPlayerPosition[1]][newPlayerPosition[0]] == 'b':
+        #    newPlayerPosition = state
         
         resultState = (newPlayerPosition[1],newPlayerPosition[0]) 
         
@@ -165,7 +175,7 @@ class MDPReader:
             return 10 
         
         if action == "Lose":
-            return -10 
+            return -10
             
         return 0
     
@@ -186,10 +196,10 @@ class MDPReader:
         if action == "right" and "right" in legalActions:      
             newPlayerPosition = (currentPlayerPosition[0]+1,currentPlayerPosition[1])
             legalAction = True
-        if action == "up" and (row-1 >= 0 and MDPRows > 1):
+        if action == "up" and "up" in legalActions:
             newPlayerPosition = (currentPlayerPosition[0],currentPlayerPosition[1]-1)
             legalAction = True
-        if action == "down" and (row+1 < MDPRows and MDPRows > 1):
+        if action == "down" and "down" in legalActions:
             newPlayerPosition = (state[0],state[1]+1)
             legalAction = True 
         

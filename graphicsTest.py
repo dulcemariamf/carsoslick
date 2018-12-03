@@ -23,9 +23,10 @@ while(myChoice == None):
   print("2. Policy Iteration")
   print("3. Approximate Q-Learning")
   print("4. Q-Learning")
+  print("5. Free Play")
   myChoice = input()
   myChoice = int(myChoice)
-  if not myChoice in [1,2,3,4]:
+  if not myChoice in [1,2,3,4,5]:
       myChoice = None
 if myChoice == 1 or myChoice == 2:
     numOil = 2

@@ -10,9 +10,10 @@ import ValueIterationAgent as VIA
 import policyIteration as PIA
 
 #global controller variables
-numLanes = 5    #reccomended max: 7
+numLanes = 5    #reccomended max: 7, set on big board
 numCars = 1     #max 2, min 1
 numOil = 2      #max 2, min 1
+carSpeed = 1
 
 myChoice = None
 badCarCoords = []
@@ -32,16 +33,20 @@ if myChoice == 1 or myChoice == 2:
     numOil = 2
     badCarCoords = [(1,0),(1,1),(1,3),(3,2),(3,3),(3,4),(5,0),(5,1),(5,2)]    #original board
     boardChoose = 0
-    while myChoice == 2 and not boardChoose in [1,2,3]:
+    while (myChoice == 2 or myChoice == 1) and not boardChoose in [1,2,3]:
         print("Which board?")
         print("1. Original")
         print("2. Altered")
-        print("3. Empty")
+        print("3. Big")
+        print("4. Empty")
         boardChoose = input()
         boardChoose = int(boardChoose)
         if boardChoose == 2:
-            badCarCoords = [(1,0),(1,1),(5,0),(5,1),(5,2)]              #works for policy iteration
+            badCarCoords = [(1,0),(1,1),(5,0),(5,1),(5,2)]  #works for policy iteration
         elif boardChoose == 3:
+            numLanes = 7
+            badCarCoords = [(0,3),(0,5),(0,6),(1,0),(1,1),(2,2),(2,3),(2,4),(2,5),(3,0),(4,1),(4,3),(4,4),(4,5),(4,6),(5,3),(6,0),(6,1),(6,5)]
+        elif boardChoose == 4:
             badCarCoords = []
     while numIter < 1 and myChoice == 1:
         print("How many iterations?")
@@ -82,6 +87,7 @@ def main():
     listener.start()
     roadBuff = 75.0
     global speed
+    global carSpeed
     global lines
     global done
     global points
@@ -189,9 +195,6 @@ def main():
     if myChoice != 1 and myChoice != 2:
         oilX = 6
         oilY = int(numLanes/2)
-    #else:
-    #    oilX = 5
-    #    oilY = int(numLanes/2)+1
         MDP[oilY][oilX] = 'o'
         oil = Image(Point(xcoords[oilX], ycoords[oilY]), "oilSlick.png")
         oil.draw(win)
@@ -271,19 +274,19 @@ def main():
             div = 5
             if x < xcoords[carX]:
                 if myChoice != 1 and myChoice != 2: xmov = (xcoords[carX]-xcoords[carX-1])/div
-                else: xmov = 1
+                else: xmov = carSpeed
                 playCar.move(xmov,0)
             if x > xcoords[carX]:
                 if myChoice != 1 and myChoice != 2: xmov = (xcoords[carX+1]-xcoords[carX])/div
-                else: xmov = 1
+                else: xmov = carSpeed
                 playCar.move(-xmov,0)
             if y < ycoords[carY]:
                 if myChoice != 1 and myChoice != 2: ymov = (ycoords[carY]-ycoords[carY-1])/div
-                else: ymov = 1
+                else: ymov = carSpeed
                 playCar.move(0,ymov)
             if y > ycoords[carY]:
                 if myChoice != 1 and myChoice != 2: ymov = (ycoords[carY+1]-ycoords[carY])/div
-                else: ymov = 1
+                else: ymov = carSpeed
                 playCar.move(0,-ymov)
             if x == xcoords[carX] and y == ycoords[carY]:
                 move = False

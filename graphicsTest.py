@@ -189,9 +189,6 @@ def main():
     if myChoice != 1 and myChoice != 2:
         oilX = 6
         oilY = int(numLanes/2)
-    #else:
-    #    oilX = 5
-    #    oilY = int(numLanes/2)+1
         MDP[oilY][oilX] = 'o'
         oil = Image(Point(xcoords[oilX], ycoords[oilY]), "oilSlick.png")
         oil.draw(win)
@@ -258,8 +255,8 @@ def main():
             drawn = not drawn
         if startCalc:
             #do calculations
-            if myChoice == 1:
-                moveCar(str(vIteration.getPolicy(mdpReader.getAgentCoordinates(MDP))))
+            #if myChoice == 1:
+                #moveCar(str(vIteration.getPolicy(mdpReader.getAgentCoordinates(MDP))))
             if myChoice == 2:
                 moveCar(str(pIteration.getPolicy(mdpReader.getAgentCoordinates(MDP))))
             #vIteration.dothing()
@@ -291,7 +288,7 @@ def main():
                     startCalc = True
         #calculate obstacle edges
         if myChoice != 1 and myChoice != 2:
-            moveObst(speed)
+            #moveObst(speed)
             if bcarY == carY:
                 badCarR = badCar.getAnchor().getX()+(badCar.getWidth()/2)
                 badCarL = badCar.getAnchor().getX()-(badCar.getWidth()/2)

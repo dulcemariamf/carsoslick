@@ -7,7 +7,7 @@ class policyIterationAgent:
         self.discount = 0.9
         #dictionary that contains all actions for each state
         self.stateAction = {}
-        self.policyIterations = 100
+        self.policyIterations = 20
         self.values = {}
         self.stateAction = {}
         mdpReader = mdpr.MDPReader()
@@ -37,15 +37,16 @@ class policyIterationAgent:
                 newValues[s] = actSum
             
             #set the dictionary values to the values they receive after one iteration through all of the states given the policy 
-            self.values = newValues 
-            #print(self.values)
+            self.values = newValues
+        print("Values after policy iteration")             
+        print(self.values)
             #print()
         print(self.values)
         #begin step two of policy iteration, which is policy improvement 
         #Update the current policy by selecting actions for each state that lead to better values than the ones we get through the current policy
         #again, we want to do this until the dictionary policy is unchanged for every state 
         #big thing: Values do not change. Only the actions at each state 
-        for i in range(3*self.policyIterations):
+        for i in range(2*self.policyIterations):
             for s in mdpReader.getStates(self.mdp):
                 
                 #grab the value we have from the current state 
@@ -67,7 +68,9 @@ class policyIterationAgent:
                 
                 #update the dictionaries 
                 self.stateAction[s] = bestAction
-        
+        print()
+        print("Actions after policy improvement") 
+        print(self.stateAction) 
         #return the policy 
         #return self.stateAction 
     

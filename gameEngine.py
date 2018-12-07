@@ -24,16 +24,17 @@ while(myChoice == None):
   print("2. Policy Iteration")
   print("3. Approximate Q-Learning")
   print("4. Q-Learning")
-  print("5. Free Play")
+  print("5. Value Iter for Dynamic Board")
+  print("6. Free Play")
   myChoice = input()
   myChoice = int(myChoice)
-  if not myChoice in [1,2,3,4,5]:
+  if not myChoice in [1,2,3,4,5,6]:
       myChoice = None
 if myChoice == 1 or myChoice == 2:
     numOil = 2
     badCarCoords = [(1,0),(1,1),(1,3),(3,2),(3,3),(3,4),(5,0),(5,1),(5,2)]    #original board
     boardChoose = 0
-    while (myChoice == 2 or myChoice == 1) and not boardChoose in [1,2,3]:
+    while (myChoice == 2 or myChoice == 1) and not boardChoose in [1,2,3,4]:
         print("Which board?")
         print("1. Original")
         print("2. Altered")
@@ -51,6 +52,9 @@ if myChoice == 1 or myChoice == 2:
     while numIter < 1 and myChoice == 1:
         print("How many iterations?")
         numIter = int(input())
+while numIter < 1 and myChoice == 5:
+    print("How many iterations?")
+    numIter = int(input())
 #set global variables
 WIDTH, HEIGHT = 1200.0, 700.0       #window size (leave alone)
 speed = 2.0                         #"car speed" (line speed)
@@ -111,7 +115,8 @@ def main():
         global oil2, oil2X, oil2Y
 
     mdpReader = mdpr.MDPReader()
-    if myChoice == 1 or myChoice == 2:
+    winFlip = False
+    if myChoice == 1 or myChoice == 2 or myChoice == 5:
         startCalc = True
         global numIter
 
@@ -156,6 +161,13 @@ def main():
         pCounter.setSize(24)
         pCounter.setStyle("bold")
         pCounter.draw(win)
+        if myChoice == 5:
+            yr = make_rect((xcoords[0],ycoords[0]),(xcoords[6]-xcoords[5], laneWidth))
+            yrect = Rectangle(yr[0], yr[1])
+            yrect.setOutline("black")
+            yrect.setFill("green")
+            yrect.draw(win)
+            MDP[0][0] = 'w'
     else:   #draw win space
         yr = make_rect((xcoords[6],ycoords[numLanes-1]),(xcoords[6]-xcoords[5], laneWidth))
         yrect = Rectangle(yr[0], yr[1])
@@ -244,7 +256,7 @@ def main():
     printMDP()
 
     #loop until done
-    if myChoice == 1:
+    if myChoice == 1 or myChoice == 5:
         vIteration = VIA.ValueIterationAgent(MDP, numIter)
     elif myChoice == 2:
         pIteration = PIA.policyIterationAgent(MDP)
@@ -265,32 +277,37 @@ def main():
                 moveCar(str(vIteration.getPolicy(mdpReader.getAgentCoordinates(MDP))))
             if myChoice == 2:
                 moveCar(str(pIteration.getPolicy(mdpReader.getAgentCoordinates(MDP))))
-            #vIteration.dothing()
-            #print(mdpReader.getLegalActions(MDP, mdpReader.getAgentCoordinates(MDP)))
+            if myChoice == 5:
+                #if mdpr.MDPReader().getLegalActions(MDP, (carX, carY))[0] == 'Win':
+                #    print("do nothing")
+                #else:
+                    #print(mdpr.MDPReader().getLegalActions(MDP, (carX, carY)))
+                    moveCar(str(vIteration.getPolicy(mdpReader.getAgentCoordinates(MDP))))
             startCalc = False
         if move:
             x = playCar.getAnchor().getX()
             y = playCar.getAnchor().getY()
             div = 5
             if x < xcoords[carX]:
-                if myChoice != 1 and myChoice != 2: xmov = (xcoords[carX]-xcoords[carX-1])/div
+                if not myChoice in [1,2]: xmov = (xcoords[carX]-xcoords[carX-1])/div
                 else: xmov = carSpeed
                 playCar.move(xmov,0)
             if x > xcoords[carX]:
-                if myChoice != 1 and myChoice != 2: xmov = (xcoords[carX+1]-xcoords[carX])/div
+                if not myChoice in [1,2]: xmov = (xcoords[carX+1]-xcoords[carX])/div
                 else: xmov = carSpeed
                 playCar.move(-xmov,0)
             if y < ycoords[carY]:
-                if myChoice != 1 and myChoice != 2: ymov = (ycoords[carY]-ycoords[carY-1])/div
+                if not myChoice in [1,2]: ymov = (ycoords[carY]-ycoords[carY-1])/div
                 else: ymov = carSpeed
                 playCar.move(0,ymov)
             if y > ycoords[carY]:
-                if myChoice != 1 and myChoice != 2: ymov = (ycoords[carY+1]-ycoords[carY])/div
+                if not myChoice in [1,2]: ymov = (ycoords[carY+1]-ycoords[carY])/div
                 else: ymov = carSpeed
                 playCar.move(0,-ymov)
             if x == xcoords[carX] and y == ycoords[carY]:
+                #print("made a move")
                 move = False
-                if (myChoice == 1 or myChoice == 2) and startCalc == False:
+                if myChoice in [1,2,5] and startCalc == False:
                     startCalc = True
         #calculate obstacle edges
         if myChoice != 1 and myChoice != 2:
@@ -393,16 +410,23 @@ def main():
             print("you win!")
         #print(points)
             
-        if MDPchanged:
-            #this is where you will call your algorithm to decide
-            #what move to make, by calling moveCar("up"), moveCar("down"),
-            #moveCar("left"), or moveCar("right")
-            #print()
-            #print(mdpReader.getAgentCoordinates(MDP))
-            #print()
-            #print(mdpReader.getTransitionStatesAndProbs(MDP,mdpReader.getAgentCoordinates(MDP),"down"))
+        if MDPchanged and myChoice == 5:
+            winx, winy = bcarX,bcarY
+            #while bcarY-3 < winy < bcarY+3 or bcarX-3 < winx < bcarX+3:
+            while bcarY == winy and bcarX == winx:
+              winy = random.randint(0,numLanes-1)
+              winx = random.randint(0,6)
+            MDP[winy][winx] = 'w'
+            if carX == winx and carY == winy:
+              MDP[carY][carX] = 'p'
+            yrmovey = ycoords[winy] - yrect.getCenter().getY()
+            yrmovex = xcoords[winx] - yrect.getCenter().getX()
+            yrect.move(yrmovex, yrmovey)
+            vIteration = VIA.ValueIterationAgent(MDP, numIter)
+            #print(yrect.getCenter())
 
-            #printMDP()
+            
+            #startCalc = True
             MDPchanged = False
     end_game()
 
